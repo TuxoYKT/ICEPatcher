@@ -31,7 +31,7 @@ namespace ICEPatcher
 
             if (icePatcherCommon.GetInputFile(inputFile) != null)
             {
-                icePatcherCommon.Patch(inputFile, patchDir);
+                icePatcherCommon.SaveFileWithDialog(icePatcherCommon.Patch(inputFile, patchDir), inputFile);
             }
         }
 

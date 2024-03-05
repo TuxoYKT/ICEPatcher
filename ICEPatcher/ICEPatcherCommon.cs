@@ -52,6 +52,19 @@ namespace ICEPatcher
 
         }
 
+        public void SaveFileWithDialog(byte[] rawData, string defaultName = "output.ice")
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog { FileName = defaultName };
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string fileName = saveFileDialog.FileName;
+                using (FileStream fileStream = new FileStream(fileName, FileMode.Create))
+                {
+                    fileStream.Write(rawData, 0, rawData.Length);
+                }
+            }
+        }
+
         public bool IsIceFile(string filePath)
         {
             byte[] buffer = System.IO.File.ReadAllBytes(filePath);
@@ -191,7 +204,7 @@ namespace ICEPatcher
             return Directory.GetFiles(patchDir, "*.*", SearchOption.AllDirectories).ToList();
         }
 
-        public void Patch(string inputFile, string patchDir)
+        public byte[] Patch(string inputFile, string patchDir)
         {
             Logger.Clear();
             Logger.Log("Input file: " + inputFile);
@@ -262,9 +275,7 @@ namespace ICEPatcher
             byte[] rawData;
             rawData = new IceV4File(header.GetBytes(), groupOneOut.ToArray(), groupTwoOut.ToArray()).getRawData(compress, forceUnencrypted);
 
-            FileStream fileStream = new FileStream(inputFile + ".patched", FileMode.Create);
-            fileStream.Write(rawData, 0, rawData.Length);
-            fileStream.Close();
+            return rawData;
             // Now ask where to save the file rawData
 
         } 
