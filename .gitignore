@@ -399,8 +399,3 @@ FodyWeavers.xsd
 
 # Ignore Patches folder
 Patches/*
-PSO2-Aqua-Library/AquaModelLibrary.Native/Dependencies/FBX/include
-PSO2-Aqua-Library/AquaModelLibrary.Native/Dependencies/FBX/lib
-
-PSO2-Aqua-Library
-PSO2-Aqua-Library
