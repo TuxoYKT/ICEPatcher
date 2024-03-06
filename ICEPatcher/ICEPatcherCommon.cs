@@ -335,15 +335,6 @@ namespace ICEPatcher
             }
         }
 
-        public static void ProcessAllDirectories(string rootPath)
-        {
-            foreach (var directory in Directory.GetDirectories(rootPath))
-            {
-                ProcessAllDirectories(directory);
-                // Your code for processing the current directory goes here
-            }
-        }
-
         public void ApplyPatch(string pso2binPath, string patchName, bool backup = false)
         {
             string patchesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Patches", patchName);
