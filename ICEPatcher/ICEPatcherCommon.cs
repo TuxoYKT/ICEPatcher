@@ -10,6 +10,7 @@ using static Zamboni.IceFileFormats.IceHeaderStructures;
 using System.Windows.Forms;
 using System.Reflection;
 using System.Security.Cryptography;
+using SixLabors.ImageSharp.PixelFormats;
 
 
 namespace ICEPatcher
@@ -238,6 +239,20 @@ namespace ICEPatcher
 
                         patched = true;
                     }
+                    else if (File.Exists(fullPath + ".yaml"))
+                    {
+                        TextPatcher textPatcher = new();
+                        Dictionary<string, Dictionary<string, string>> yamlData = textPatcher.ReadYAML(fullPath + ".yaml");
+                        Logger.Log("    " + " - Patching " + IceFile.getFileName(file, i) + " with YAML");
+                        byte[] textfile = textPatcher.PatchPSO2Text((byte[])file, yamlData);
+
+                        List<byte> bytes = new(textfile);
+                        bytes.InsertRange(0, new IceFileHeader(fullPath, (uint)bytes.Count).GetBytes());
+                        groupOneOut.Add(bytes.ToArray());
+                        Logger.Log(" - " + IceFile.getFileName(file, i) + " [PATCHED (TEXT)]");
+
+                        patched = true;
+                    }
                     else
                     {
                         groupOneOut.Add((byte[])file);
@@ -263,6 +278,20 @@ namespace ICEPatcher
 
                         patched = true;
                     }
+                    else if (File.Exists(fullPath + ".yaml"))
+                    {
+                        TextPatcher textPatcher = new();
+                        Dictionary<string, Dictionary<string, string>> yamlData = textPatcher.ReadYAML(fullPath + ".yaml");
+                        Logger.Log("    " + " - Patching " + IceFile.getFileName(file, i) + " with YAML");
+                        byte[] textfile = textPatcher.PatchPSO2Text((byte[])file, yamlData);
+
+                        List<byte> bytes = new(textfile);
+                        bytes.InsertRange(0, new IceFileHeader(fullPath, (uint)bytes.Count).GetBytes());
+                        groupTwoOut.Add(bytes.ToArray());
+                        Logger.Log(" - " + IceFile.getFileName(file, i) + " [PATCHED (TEXT)]");
+
+                        patched = true;
+                    }
                     else
                     {
                         groupTwoOut.Add((byte[])file);
@@ -284,7 +313,6 @@ namespace ICEPatcher
             rawData = new IceV4File(header.GetBytes(), groupOneOut.ToArray(), groupTwoOut.ToArray()).getRawData(compress, forceUnencrypted);
 
             return rawData;
-            // Now ask where to save the file rawData
 
         } 
 
@@ -329,7 +357,7 @@ namespace ICEPatcher
                 }
 
                 // Add "\" back after 2 characters
-                if (isReboot) sb.Insert(2, "/");
+                if (isReboot) sb.Insert(2, "\\");
 
                 return sb.ToString();
             }
@@ -382,6 +410,7 @@ namespace ICEPatcher
                         }
 
                         Logger.Log("Patch applied: " + PSO2IcePath);
+                        Logger.Log("");
                     }
                 }
             }
