@@ -1,4 +1,5 @@
 using System;
+using System.Windows.Forms;
 using Zamboni;
 
 namespace ICEPatcher
@@ -11,41 +12,72 @@ namespace ICEPatcher
         {
             InitializeComponent();
             Logger.SetTextBox(logTextBox);
+            refreshButton_Click(null, null);
         }
 
         private void inputFileBrowseButton_Click(object sender, EventArgs e)
         {
-            string inputFile = icePatcherCommon.OpenFile();
+            string inputFile = icePatcherCommon.OpenFolder();
 
-            if (icePatcherCommon.GetInputFile(inputFile) != null)
-            {
-                inputFileTextBox.Text = inputFile;
-                icePatcherCommon.ListIceContents(inputFile);
-            }
+            if (inputFile != null) { inputFileTextBox.Text = inputFile; }
         }
 
         private void patchButton_Click(object sender, EventArgs e)
         {
             string inputFile = inputFileTextBox.Text;
-            string patchDir = patchTextBox.Text;
 
-            if (icePatcherCommon.GetInputFile(inputFile) != null)
+            if (inputFile == "") 
+            { 
+                MessageBox.Show("pso2_bin folder not selected.", "ICE Patcher", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (patchesListBox.CheckedItems.Count == 0)
             {
-                icePatcherCommon.SaveFileWithDialog(icePatcherCommon.Patch(inputFile, patchDir), inputFile);
+                MessageBox.Show("No patches selected.", "ICE Patcher", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            for (int i = 0; i < patchesListBox.Items.Count; i++)
+            {
+                if (patchesListBox.GetItemCheckState(i) == CheckState.Checked)
+                {
+                    string checkedItem = patchesListBox.Items[i].ToString();
+                    // Your code logic for the checked item goes here
+
+                    icePatcherCommon.ApplyPatch(inputFile, checkedItem);
+                }
             }
         }
 
-        private void patchBrowseButton_Click(object sender, EventArgs e)
-        {
-            string inputFile = inputFileTextBox.Text;
-            string patchDir = icePatcherCommon.OpenFolder();
+        private List<bool> checkedStateList = new List<bool>();
 
-            if (patchDir != null)
+        private void refreshButton_Click(object sender, EventArgs e)
+        {
+            SaveCheckedState();
+            var previousItems = patchesListBox.Items.Cast<object>().ToList();
+            patchesListBox.Items.Clear();
+            patchesListBox.Items.AddRange(icePatcherCommon.GetPatches());
+            UpdateCheckedState(previousItems);
+        }
+
+        private void SaveCheckedState()
+        {
+            checkedStateList.Clear();
+            foreach (var item in patchesListBox.Items)
             {
-                patchTextBox.Text = patchDir;
-                if (icePatcherCommon.GetInputFile(inputFile) != null)
+                checkedStateList.Add(patchesListBox.CheckedItems.Contains(item));
+            }
+        }
+
+        private void UpdateCheckedState(List<object> previousItems)
+        {
+            for (int i = 0; i < patchesListBox.Items.Count; i++)
+            {
+                var item = patchesListBox.Items[i];
+                if (previousItems.Contains(item))
                 {
-                    icePatcherCommon.ListIceContents(inputFile, patchDir);
+                    patchesListBox.SetItemChecked(i, checkedStateList[previousItems.IndexOf(item)]);
                 }
             }
         }

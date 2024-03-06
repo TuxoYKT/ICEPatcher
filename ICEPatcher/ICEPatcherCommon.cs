@@ -9,6 +9,7 @@ using Zamboni.IceFileFormats;
 using static Zamboni.IceFileFormats.IceHeaderStructures;
 using System.Windows.Forms;
 using System.Reflection;
+using System.Security.Cryptography;
 
 
 namespace ICEPatcher
@@ -137,7 +138,6 @@ namespace ICEPatcher
 
         public void ListIceContents(string inputFile, string patchDir = "")
         {
-            Logger.Clear();
             Logger.Log("Input file: " + inputFile);
             Stream inStream = LoadIceFileAsStream(inputFile);
 
@@ -206,15 +206,14 @@ namespace ICEPatcher
 
         public byte[] Patch(string inputFile, string patchDir)
         {
-            Logger.Clear();
             Logger.Log("Input file: " + inputFile);
 
             byte[] buffer = System.IO.File.ReadAllBytes(inputFile);
             Stream inStream = new MemoryStream(buffer);
-            int version = GetIceVersion(inStream);
             IceFile iceFile = IceFile.LoadIceFile(inStream);
             bool compress = false;
             bool forceUnencrypted = false;
+            bool patched = false;
 
             // Logger.Log("ICE version: " + version.ToString());
 
@@ -236,6 +235,8 @@ namespace ICEPatcher
                         bytes.InsertRange(0, new IceFileHeader(fullPath, (uint)bytes.Count).GetBytes());
                         groupOneOut.Add(bytes.ToArray());
                         Logger.Log(" - " + IceFile.getFileName(file, i) + " [PATCHED]");
+
+                        patched = true;
                     }
                     else
                     {
@@ -259,6 +260,8 @@ namespace ICEPatcher
                         bytes.InsertRange(0, new IceFileHeader(fullPath, (uint)bytes.Count).GetBytes());
                         groupTwoOut.Add(bytes.ToArray());
                         Logger.Log(" - " + IceFile.getFileName(file, i) + " [PATCHED]");
+
+                        patched = true;
                     }
                     else
                     {
@@ -269,6 +272,11 @@ namespace ICEPatcher
                 }
             }
 
+            if (!patched)
+            {
+                Logger.Log("Nothing to patch. Skipping...");
+                return null;
+            }
 
             IceArchiveHeader header = new();
 
@@ -279,5 +287,113 @@ namespace ICEPatcher
             // Now ask where to save the file rawData
 
         } 
+
+        public string[] GetPatches()
+        {
+            string executablePath = AppDomain.CurrentDomain.BaseDirectory;
+            string patchPath = Path.Combine(executablePath, "Patches");
+
+            try
+            {
+                string[] subFolders = Directory.GetDirectories(patchPath);
+                string[] folderNames = new string[subFolders.Length];
+                for (int i = 0; i < subFolders.Length; i++)
+                {
+                    folderNames[i] = Path.GetFileName(subFolders[i]);
+                }
+
+                return folderNames;
+            }
+            catch (Exception err)
+            {
+                Console.WriteLine("Error reading folder: " + err.Message);
+            }
+
+            return null;
+        }
+
+        public static string CalculateMD5Hash(string input, bool isReboot)
+        {
+            // Replace "\" with "/" in the input
+            input = input.Replace("\\", "/");
+
+            using (MD5 md5 = MD5.Create())
+            {
+                byte[] inputBytes = Encoding.ASCII.GetBytes(input);
+                byte[] hashBytes = md5.ComputeHash(inputBytes);
+
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < hashBytes.Length; i++)
+                {
+                    sb.Append(hashBytes[i].ToString("x2"));
+                }
+
+                // Add "\" back after 2 characters
+                if (isReboot) sb.Insert(2, "/");
+
+                return sb.ToString();
+            }
+        }
+
+        public static void ProcessAllDirectories(string rootPath)
+        {
+            foreach (var directory in Directory.GetDirectories(rootPath))
+            {
+                ProcessAllDirectories(directory);
+                // Your code for processing the current directory goes here
+            }
+        }
+
+        public void ApplyPatch(string pso2binPath, string patchName, bool backup = false)
+        {
+            string patchesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Patches", patchName);
+            Logger.Log("Applying Patch: " + patchName);
+
+            foreach (var w32path in Directory.GetDirectories(patchesPath))
+            {
+                string w32folder = Path.GetFileName(w32path);
+
+                bool isReboot = false;
+
+                if (w32folder.Contains("reboot")) isReboot = true;
+
+                foreach (var subpath in Directory.GetDirectories(w32path, "*", SearchOption.AllDirectories))
+                {
+                    string relativePath = Path.GetRelativePath(w32path, subpath);
+                    string patchIceFolderPath = Path.Combine(patchesPath, w32path, relativePath);
+
+                    // if subpath contains a folder we skip
+                    if (Directory.GetDirectories(subpath).Any()) continue;
+
+                    // if subpath is empty we skip
+                    if (!Directory.GetFiles(subpath).Any()) continue;
+
+                    if (File.Exists(Path.Combine(pso2binPath, "data", w32folder, relativePath)) ||
+                        File.Exists(Path.Combine(pso2binPath, "data", "dlc", w32folder, relativePath)) ||
+                        File.Exists(Path.Combine(pso2binPath, "data", w32folder, CalculateMD5Hash(relativePath + ".ice", isReboot))) ||
+                        File.Exists(Path.Combine(pso2binPath, "data", "dlc", w32folder, CalculateMD5Hash(relativePath + ".ice", isReboot))))
+                    {
+                        string PSO2IcePath =    File.Exists(Path.Combine(pso2binPath, "data", w32folder, relativePath)) ?
+                                                Path.Combine(pso2binPath, "data", w32folder, relativePath) :
+
+                                                File.Exists(Path.Combine(pso2binPath, "data", "dlc", w32folder, relativePath)) ?
+                                                Path.Combine(pso2binPath, "data", "dlc", w32folder, relativePath) :
+
+                                                File.Exists(Path.Combine(pso2binPath, "data", w32folder, CalculateMD5Hash(relativePath + ".ice", isReboot))) ?
+                                                Path.Combine(pso2binPath, "data", w32folder, CalculateMD5Hash(relativePath + ".ice", isReboot)) :
+                                                Path.Combine(pso2binPath, "data", "dlc", w32folder, CalculateMD5Hash(relativePath + ".ice", isReboot));
+
+                        byte[] rawData = Patch(PSO2IcePath, patchIceFolderPath);
+
+                        if (rawData != null)
+                        {
+                            File.WriteAllBytes(PSO2IcePath, rawData);
+                        }
+
+                        Logger.Log("Patch applied: " + PSO2IcePath);
+                    }
+                }
+            }
+        }
     }
 }
