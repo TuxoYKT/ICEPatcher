@@ -1,3 +1,7 @@
 [submodule "ZamboniLib"]
 	path = ZamboniLib
 	url = https://github.com/Shadowth117/ZamboniLib.git
+
+[submodule "PSO2-Aqua-Library"]
+	path = PSO2-Aqua-Library
+	url = https://github.com/Shadowth117/PSO2-Aqua-Library.git
