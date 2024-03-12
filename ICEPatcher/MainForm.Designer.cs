@@ -36,6 +36,7 @@
             patchButton = new Button();
             patchesListBox = new CheckedListBox();
             refreshButton = new Button();
+            progressBar1 = new ProgressBar();
             SuspendLayout();
             // 
             // inputLabel
@@ -78,8 +79,8 @@
             // logTextBox
             // 
             logTextBox.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            logTextBox.Font = new Font("Courier New", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            logTextBox.Location = new Point(13, 464);
+            logTextBox.Font = new Font("Courier New", 9F);
+            logTextBox.Location = new Point(13, 473);
             logTextBox.Multiline = true;
             logTextBox.Name = "logTextBox";
             logTextBox.ScrollBars = ScrollBars.Vertical;
@@ -89,7 +90,7 @@
             // patchButton
             // 
             patchButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            patchButton.Location = new Point(622, 677);
+            patchButton.Location = new Point(622, 686);
             patchButton.Name = "patchButton";
             patchButton.Size = new Size(75, 23);
             patchButton.TabIndex = 7;
@@ -103,7 +104,7 @@
             patchesListBox.FormattingEnabled = true;
             patchesListBox.Location = new Point(13, 71);
             patchesListBox.Name = "patchesListBox";
-            patchesListBox.Size = new Size(603, 382);
+            patchesListBox.Size = new Size(603, 346);
             patchesListBox.TabIndex = 8;
             // 
             // refreshButton
@@ -117,11 +118,21 @@
             refreshButton.UseVisualStyleBackColor = true;
             refreshButton.Click += refreshButton_Click;
             // 
+            // progressBar1
+            // 
+            progressBar1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            progressBar1.Location = new Point(15, 444);
+            progressBar1.Name = "progressBar1";
+            progressBar1.Size = new Size(682, 23);
+            progressBar1.Step = 1;
+            progressBar1.TabIndex = 10;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(709, 710);
+            ClientSize = new Size(709, 719);
+            Controls.Add(progressBar1);
             Controls.Add(refreshButton);
             Controls.Add(patchesListBox);
             Controls.Add(patchButton);
@@ -146,5 +157,6 @@
         private Button patchButton;
         private CheckedListBox patchesListBox;
         private Button refreshButton;
+        private ProgressBar progressBar1;
     }
 }

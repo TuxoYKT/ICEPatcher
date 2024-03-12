@@ -13,7 +13,6 @@ namespace ICEPatcher
         public Dictionary<string, Dictionary<string, string>> ReadYAML(string yamlPath)
         {
             Logger.Log("Reading YAML: " + yamlPath);
-
             string yamlContent = File.ReadAllText(yamlPath);
             var deserializer = new YamlDotNet.Serialization.DeserializerBuilder().Build();
             Dictionary<string, Dictionary<string, string>> dataYaml =
@@ -31,7 +30,6 @@ namespace ICEPatcher
             {
                 new_text.categoryNames.Add(originalText.categoryNames[i].Trim());
                 new_text.text.Add(new List<List<PSO2Text.TextPair>>());
-                // Logger.Log("    " + originalText.categoryNames[i]);
                 for (int j = 0; j < originalText.text[i].Count; j++)
                 {
                     new_text.text[i].Add(new List<PSO2Text.TextPair>());
