@@ -73,6 +73,16 @@ namespace ICEPatcher
             return new_text.GetBytesNIFL();
         }
 
+        private bool ContainsJapaneseText(string str)
+        {
+            foreach (char c in str)
+            {
+                if (c >= 0x3040 && c <= 0x30FF) return true;
+            }
+
+            return false;
+        }
+
         public Dictionary<string, List<string>> ReadCSV(string csvPath)
         {
             Logger.Log("Reading CSV: " + csvPath);
@@ -92,13 +102,16 @@ namespace ICEPatcher
                         string name = fields[0].Split('#')[0]; //Strip after #
                         string str = fields[1].ToString().Trim('\"');
 
-                        Logger.Log("    " + name + ": " + str);
-
-                        if (!csvData.ContainsKey(name))
+                        if (!ContainsJapaneseText(str)) // we don't want to patch japanese text so we try to filter it out
                         {
-                            csvData[name] = new List<string>();
+                            if (!csvData.ContainsKey(name))
+                            {
+                                csvData[name] = new List<string>();
+                            }
+
+                            csvData[name].Add(str);
+                            Logger.Log("    " + name + ": " + str);
                         }
-                        csvData[name].Add(str);
                     }
                 }
             }
