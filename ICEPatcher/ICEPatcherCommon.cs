@@ -174,13 +174,10 @@ namespace ICEPatcher
         bool DoesThisFileExist(string fullPath, string originalExtension, string targetExtension)
         {
             string targetFilePath = fullPath + "." + targetExtension;
-            Logger.Log("Does it? Exists: " + targetFilePath);
             string originalExtensionFilePath = Path.ChangeExtension(fullPath, targetExtension);
-            Logger.Log("Does it? Exists: " + originalExtensionFilePath);
 
             if (File.Exists(targetFilePath) || File.Exists(originalExtensionFilePath))
             {
-                Logger.Log("Exists: " + fullPath);
                 return true;
             }
 
