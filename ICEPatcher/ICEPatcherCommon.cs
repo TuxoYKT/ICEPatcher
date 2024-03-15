@@ -367,12 +367,8 @@ namespace ICEPatcher
 
             return new Dictionary<string, string>();
         }
-
-        public void ApplyPatch(string pso2binPath, string patchName, ProgressBar progressBar, bool backup = false)
+        private void ProcessFileList(string patchesPath)
         {
-            string patchesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Patches", patchName);
-            Logger.Log("Applying Patch: " + patchName);
-
             if (File.Exists(Path.Combine(patchesPath, "filelist.txt")))
             {
                 Logger.Log("Found filelist: " + Path.Combine(patchesPath, "filelist.txt"));
@@ -383,7 +379,7 @@ namespace ICEPatcher
                     Logger.Log($"{root}");
                     foreach (string filePath in Directory.GetFiles(root))
                     {
-                        string file = Path.GetFileName(filePath);                   
+                        string file = Path.GetFileName(filePath);
                         Logger.Log($"{file}");
                         if (fileList.ContainsKey(file))
                         {
@@ -392,7 +388,7 @@ namespace ICEPatcher
                             {
                                 w32folder = "win32reboot_na";
                             }
-                        
+
                             string outputFolderPath = Path.Combine(patchesPath, w32folder, fileList[file]);
                             if (!Directory.Exists(outputFolderPath))
                             {
@@ -404,6 +400,14 @@ namespace ICEPatcher
                     }
                 }
             }
+        }
+
+        public void ApplyPatch(string pso2binPath, string patchName, ProgressBar progressBar, bool backup = false)
+        {
+            string patchesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Patches", patchName);
+            Logger.Log("Applying Patch: " + patchName);
+
+            ProcessFileList(patchesPath); // this is done for Arks-Layer patch
 
             foreach (var w32path in Directory.GetDirectories(patchesPath))
             {
