@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using YamlDotNet.Core;
 using AquaModelLibrary.Data.PSO2.Aqua;
 using Microsoft.VisualBasic.FileIO;
+using System.Text.RegularExpressions;
 
 namespace ICEPatcher
 {
@@ -75,13 +76,18 @@ namespace ICEPatcher
 
         private bool ContainsJapaneseText(string str)
         {
-            foreach (char c in str)
-            {
-                if (c >= 0x3040 && c <= 0x30FF) return true;
-            }
+            return System.Text.RegularExpressions.Regex.IsMatch(str, @"[\u3040-\u30FF\u4E00-\u9FFF]");
+        }
 
+        private bool IsUntranslated(string str)
+        {
+            if (str[0] == '*')
+            {
+                return true;
+            }
             return false;
         }
+
 
         public Dictionary<string, List<string>> ReadCSV(string csvPath)
         {
@@ -100,18 +106,18 @@ namespace ICEPatcher
                     if (fields.Length >= 2)
                     {
                         string name = fields[0].Split('#')[0]; //Strip after #
-                        string str = fields[1].ToString().Trim('\"');
+                        string str = Regex.Unescape(fields[1].ToString().Trim('\"'));
 
-                        if (!ContainsJapaneseText(str)) // we don't want to patch japanese text so we try to filter it out
+                        if (!csvData.ContainsKey(name))
                         {
-                            if (!csvData.ContainsKey(name))
-                            {
-                                csvData[name] = new List<string>();
-                            }
-
-                            csvData[name].Add(str);
-                            Logger.Log("    " + name + ": " + str);
+                            csvData[name] = new List<string>();
                         }
+
+                        if (!ContainsJapaneseText(str) && !IsUntranslated(str))
+                            csvData[name].Add(str);
+                        else
+                            csvData[name].Add(null);
+                        Logger.Log("    " + name + ": " + str);
                     }
                 }
             }
@@ -156,12 +162,21 @@ namespace ICEPatcher
                                 if (nameCounts.ContainsKey(pair.name))
                                 {
                                     nameCounts[pair.name]++;
-                                    pair.str = csvData[pair.name][(int)nameCounts[pair.name]];
+                                    try
+                                    {
+                                        if (csvData[pair.name][(int)nameCounts[pair.name]] != null)
+                                            pair.str = csvData[pair.name][(int)nameCounts[pair.name]];
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Logger.Log(e.Message);
+                                    }
                                 }
                                 else
                                 {
                                     nameCounts.Add(pair.name, (int)0);
-                                    pair.str = csvData[pair.name][0];
+                                    if (csvData[pair.name][0] != null)
+                                        pair.str = csvData[pair.name][0];
                                 }
                                 Logger.Log("    " + " - " + pair.name + ": " + pair.str + " in " + originalText.categoryNames[i]);
                             }

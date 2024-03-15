@@ -119,5 +119,14 @@ namespace ICEPatcher
                 }
             }
         }
+
+        private void openFolderButton_Click(object sender, EventArgs e)
+        {
+            string executablePath = AppDomain.CurrentDomain.BaseDirectory;
+            string patchPath = Path.Combine(executablePath, "Patches");
+
+            // open folder patchPath in file explorer
+            System.Diagnostics.Process.Start("explorer.exe", patchPath);
+        }
     }
 }

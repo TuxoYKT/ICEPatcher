@@ -231,18 +231,21 @@ namespace ICEPatcher
                     byte[] patchedFile = PatchFile(groupFile, fullPath);
                     patchedFiles.Add(patchedFile);
                     isPatched = true;
+                    progressBar.Invoke((MethodInvoker)delegate { progressBar.PerformStep(); });
                 }
                 else if (DoesThisFileExist(fullPath, "text", "yaml"))
                 {
                     byte[] patchedFile = PatchTextFile(groupFile, fullPath, "yaml");
                     patchedFiles.Add(patchedFile);
                     isPatched = true;
+                    progressBar.Invoke((MethodInvoker)delegate { progressBar.PerformStep(); });
                 }
                 else if (DoesThisFileExist(fullPath, "text", "csv"))
                 {
                     byte[] patchedFile = PatchTextFile(groupFile, fullPath, "csv");
                     patchedFiles.Add(patchedFile);
                     isPatched = true;
+                    progressBar.Invoke((MethodInvoker)delegate { progressBar.PerformStep(); });
                 }
                 else
                 {
@@ -250,12 +253,11 @@ namespace ICEPatcher
                     Logger.Log(" - " + IceFile.getFileName(groupFile));
                 }
 
-                progressBar.Invoke((MethodInvoker)delegate { progressBar.PerformStep(); });
             }
 
             if (!isPatched)
             {
-                Logger.Log("Nothing to patch. Skipping...");
+                Logger.Log("Nothing to patch in this group. Skipping...");
             }
 
             return patchedFiles;
@@ -348,14 +350,66 @@ namespace ICEPatcher
             }
         }
 
+        private Dictionary<string, string> ReadFileList(string patchesPath)
+        {
+            if (File.Exists(Path.Combine(patchesPath, "filelist.txt")))
+            {
+                Dictionary<string, string> fileList = new Dictionary<string, string>();
+
+                foreach (string line in File.ReadAllLines(Path.Combine(patchesPath, "filelist.txt")))
+                {
+                    string[] parts = line.Split(',');
+                    fileList[parts[1].Trim().Replace(".text", ".csv")] = parts[0].Trim();
+                }
+
+                return fileList;
+            }
+
+            return new Dictionary<string, string>();
+        }
+
         public void ApplyPatch(string pso2binPath, string patchName, ProgressBar progressBar, bool backup = false)
         {
             string patchesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Patches", patchName);
             Logger.Log("Applying Patch: " + patchName);
 
+            if (File.Exists(Path.Combine(patchesPath, "filelist.txt")))
+            {
+                Logger.Log("Found filelist: " + Path.Combine(patchesPath, "filelist.txt"));
+                Dictionary<string, string> fileList = ReadFileList(patchesPath);
+
+                foreach (string root in Directory.GetDirectories(patchesPath, "*", SearchOption.AllDirectories))
+                {
+                    Logger.Log($"{root}");
+                    foreach (string filePath in Directory.GetFiles(root))
+                    {
+                        string file = Path.GetFileName(filePath);                   
+                        Logger.Log($"{file}");
+                        if (fileList.ContainsKey(file))
+                        {
+                            string w32folder = "win32_na";
+                            if (fileList[file].Length > 2 && fileList[file][2] == '\\')
+                            {
+                                w32folder = "win32reboot_na";
+                            }
+                        
+                            string outputFolderPath = Path.Combine(patchesPath, w32folder, fileList[file]);
+                            if (!Directory.Exists(outputFolderPath))
+                            {
+                                Directory.CreateDirectory(outputFolderPath);
+                            }
+                            File.Copy(Path.Combine(root, file), Path.Combine(outputFolderPath, file));
+                            Logger.Log(Path.Combine(root, file));
+                        }
+                    }
+                }
+            }
+
             foreach (var w32path in Directory.GetDirectories(patchesPath))
             {
                 string w32folder = Path.GetFileName(w32path);
+
+                if (!w32folder.Contains("win32")) continue;
 
                 bool isReboot = false;
 

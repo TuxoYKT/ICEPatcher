@@ -37,6 +37,7 @@
             patchesListBox = new CheckedListBox();
             refreshButton = new Button();
             progressBar1 = new ProgressBar();
+            openFolderButton = new Button();
             SuspendLayout();
             // 
             // inputLabel
@@ -127,11 +128,22 @@
             progressBar1.Step = 1;
             progressBar1.TabIndex = 10;
             // 
+            // openFolderButton
+            // 
+            openFolderButton.Location = new Point(622, 377);
+            openFolderButton.Name = "openFolderButton";
+            openFolderButton.Size = new Size(75, 40);
+            openFolderButton.TabIndex = 11;
+            openFolderButton.Text = "Open Folder";
+            openFolderButton.UseVisualStyleBackColor = true;
+            openFolderButton.Click += openFolderButton_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(709, 719);
+            Controls.Add(openFolderButton);
             Controls.Add(progressBar1);
             Controls.Add(refreshButton);
             Controls.Add(patchesListBox);
@@ -158,5 +170,6 @@
         private CheckedListBox patchesListBox;
         private Button refreshButton;
         private ProgressBar progressBar1;
+        private Button openFolderButton;
     }
 }
