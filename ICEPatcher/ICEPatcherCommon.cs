@@ -425,9 +425,12 @@ namespace ICEPatcher
         {
             Dictionary<string, List<string>> output = new Dictionary<string, List<string>>();
             Dictionary<string, string> fileList = ReadFileList(patchesPath);
+            List<string> excludedFolders = new List<string> { "Files", "Dummy", "Empty" };
 
             foreach (string root in Directory.GetDirectories(patchesPath, "*", SearchOption.AllDirectories))
             {
+                if (excludedFolders.Contains(Path.GetFileName(root))) continue;
+
                 foreach (string filePath in Directory.GetFiles(root))
                 {
                     string file = Path.GetFileName(filePath);
