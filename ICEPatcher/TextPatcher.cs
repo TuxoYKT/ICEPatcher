@@ -60,7 +60,7 @@ namespace ICEPatcher
                                     if (replacement.Key == originalText.text[i][j][k].name)
                                     {
                                         pair.str = replacement.Value;
-                                        Logger.Log("    " + " - " + pair.name + ": " + pair.str + " in " + originalText.categoryNames[i]);
+                                        //Logger.Log("    " + " - " + pair.name + ": " + pair.str + " in " + originalText.categoryNames[i]);
                                     }
                                 }
                             }
@@ -117,7 +117,7 @@ namespace ICEPatcher
                             csvData[name].Add(str);
                         else
                             csvData[name].Add(null);
-                        Logger.Log("    " + name + ": " + str);
+                        //Logger.Log("    " + name + ": " + str);
                     }
                 }
             }
@@ -137,7 +137,7 @@ namespace ICEPatcher
             {
                 new_text.categoryNames.Add(originalText.categoryNames[i].Trim());
                 new_text.text.Add(new List<List<PSO2Text.TextPair>>());
-                Logger.Log("    " + originalText.categoryNames[i]);
+                //Logger.Log("    " + originalText.categoryNames[i]);
                 for (int j = 0; j < originalText.text[i].Count; j++)
                 {
                     new_text.text[i].Add(new List<PSO2Text.TextPair>());
@@ -157,7 +157,7 @@ namespace ICEPatcher
                             // we don't check for category, instead we check if name is in the csv
                             if (csvData.ContainsKey(pair.name))
                             {
-                                Logger.Log("    " + originalText.text[i][j][k].name);
+                                //Logger.Log("    " + originalText.text[i][j][k].name);
                                 // we keep track of if that name is repeating
                                 if (nameCounts.ContainsKey(pair.name))
                                 {
@@ -178,7 +178,7 @@ namespace ICEPatcher
                                     if (csvData[pair.name][0] != null)
                                         pair.str = csvData[pair.name][0];
                                 }
-                                Logger.Log("    " + " - " + pair.name + ": " + pair.str + " in " + originalText.categoryNames[i]);
+                                //Logger.Log("    " + " - " + pair.name + ": " + pair.str + " in " + originalText.categoryNames[i]);
                             }
 
                             new_text.text[i][j].Add(pair);
