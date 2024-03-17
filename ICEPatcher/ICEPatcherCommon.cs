@@ -200,7 +200,7 @@ namespace ICEPatcher
 
         public byte[] PatchIceFile(string inputFile, string patchDirectory, ProgressBar progressBar, List<string> filesToPatchList = null)
         {
-            Logger.Log("Input file: " + inputFile);
+            // Logger.Log("Input file: " + inputFile);
 
             byte[] buffer = System.IO.File.ReadAllBytes(inputFile);
             IceFile iceFile = IceFile.LoadIceFile(new MemoryStream(buffer));
@@ -218,59 +218,52 @@ namespace ICEPatcher
         {
             List<byte[]> patchedFiles = new List<byte[]>();
             bool isPatched = false;
-            int i = 0;
 
-            if (isGroupOne) Logger.Log("group1 files:");
-            else Logger.Log("group2 files:");
+            // if (isGroupOne) Logger.Log("group1 files:");
+            // else Logger.Log("group2 files:");
 
-                // Split filePath into parent folder path and filename
             foreach (var groupFile in groupFiles)
             {
-                // string fullPath = Path.Combine(patchDirectory, IceFile.getFileName(groupFile));
+                int i = 0;
                 string fileNameFromIce = IceFile.getFileName(groupFile);
+                string fileNameFromIceWithoutExtenstion = Path.GetFileNameWithoutExtension(fileNameFromIce);
 
-                if (i <= filesToPatchList.Count - 1)
+                while (fileNameFromIceWithoutExtenstion != Path.GetFileNameWithoutExtension(filesToPatchList[i]) && i < filesToPatchList.Count - 1) i++;
+
+                if (fileNameFromIce == Path.GetFileName(filesToPatchList[i]))
+                { 
+                    byte[] patchedFile = PatchFile(groupFile, filesToPatchList[i]);
+                    patchedFiles.Add(patchedFile);
+                    isPatched = true;
+                    i++;
+                    progressBar.Invoke((MethodInvoker)delegate { progressBar.PerformStep(); });
+                }
+                else if (DoesThisFileExist(Path.Combine(Path.GetDirectoryName(filesToPatchList[i]), IceFile.getFileName(groupFile)), "text", "yaml"))
                 {
-                    if (fileNameFromIce == Path.GetFileName(filesToPatchList[i]))
-                    { 
-                        byte[] patchedFile = PatchFile(groupFile, filesToPatchList[i]);
-                        patchedFiles.Add(patchedFile);
-                        isPatched = true;
-                        i++;
-                        progressBar.Invoke((MethodInvoker)delegate { progressBar.PerformStep(); });
-                    }
-                    else if (DoesThisFileExist(Path.Combine(Path.GetDirectoryName(filesToPatchList[i]), IceFile.getFileName(groupFile)), "text", "yaml"))
-                    {
-                        byte[] patchedFile = PatchTextFile(groupFile, filesToPatchList[i], "yaml");
-                        patchedFiles.Add(patchedFile);
-                        isPatched = true;
-                        i++;
-                        progressBar.Invoke((MethodInvoker)delegate { progressBar.PerformStep(); });
-                    }
-                    else if (DoesThisFileExist(Path.Combine(Path.GetDirectoryName(filesToPatchList[i]), IceFile.getFileName(groupFile)), "text", "csv"))
-                    {
-                        byte[] patchedFile = PatchTextFile(groupFile, filesToPatchList[i], "csv");
-                        patchedFiles.Add(patchedFile);
-                        isPatched = true;
-                        i++;
-                        progressBar.Invoke((MethodInvoker)delegate { progressBar.PerformStep(); });
-                    }
-                    else
-                    {
-                        patchedFiles.Add(groupFile);
-                        Logger.Log(" - " + IceFile.getFileName(groupFile));
-                    }
+                    byte[] patchedFile = PatchTextFile(groupFile, filesToPatchList[i], "yaml");
+                    patchedFiles.Add(patchedFile);
+                    isPatched = true;
+                    i++;
+                    progressBar.Invoke((MethodInvoker)delegate { progressBar.PerformStep(); });
+                }
+                else if (DoesThisFileExist(Path.Combine(Path.GetDirectoryName(filesToPatchList[i]), IceFile.getFileName(groupFile)), "text", "csv"))
+                {
+                    byte[] patchedFile = PatchTextFile(groupFile, filesToPatchList[i], "csv");
+                    patchedFiles.Add(patchedFile);
+                    isPatched = true;
+                    i++;
+                    progressBar.Invoke((MethodInvoker)delegate { progressBar.PerformStep(); });
                 }
                 else
                 {
                     patchedFiles.Add(groupFile);
-                    Logger.Log(" - " + IceFile.getFileName(groupFile));
+                    // Logger.Log(" - " + IceFile.getFileName(groupFile));
                 }
             }
 
             if (!isPatched)
             {
-                Logger.Log("Nothing to patch in this group. Skipping...");
+                // Logger.Log("Nothing to patch in this group. Skipping...");
             }
 
             return patchedFiles;
@@ -280,7 +273,7 @@ namespace ICEPatcher
         {
             List<byte> bytes = new(File.ReadAllBytes(fullPath));
             bytes.InsertRange(0, new IceFileHeader(fullPath, (uint)bytes.Count).GetBytes());
-            Logger.Log(" - " + IceFile.getFileName(groupFile) + " [PATCHED]");
+            // Logger.Log(" - " + IceFile.getFileName(groupFile) + " [PATCHED]");
 
             return bytes.ToArray();
         }
@@ -300,7 +293,7 @@ namespace ICEPatcher
                 List<byte> bytes = new(textFile);
                 bytes.InsertRange(0, new IceFileHeader(groupFileName, (uint)bytes.Count).GetBytes());
 
-                Logger.Log(" - " + IceFile.getFileName(groupFile) + " [PATCHED WITH YAML]");
+                // Logger.Log(" - " + IceFile.getFileName(groupFile) + " [PATCHED WITH YAML]");
 
                 return bytes.ToArray();
             }
@@ -313,7 +306,7 @@ namespace ICEPatcher
                 List<byte> bytes = new(textFile);
                 bytes.InsertRange(0, new IceFileHeader(groupFileName, (uint)bytes.Count).GetBytes());
 
-                Logger.Log(" - " + IceFile.getFileName(groupFile) + " [PATCHED WITH CSV]");
+                // Logger.Log(" - " + IceFile.getFileName(groupFile) + " [PATCHED WITH CSV]");
 
                 return bytes.ToArray();
             }
@@ -458,7 +451,7 @@ namespace ICEPatcher
             Logger.Log("Found filelist: " + Path.Combine(patchesPath, "filelist.txt"));
             Dictionary<string, List<string>> fileList = GetFileList(patchesPath);
 
-            foreach (var iceFolder in fileList)
+            Parallel.ForEach(fileList, iceFolder =>
             {
                 string relativePath = iceFolder.Key;
                 //Logger.Log(relativePath);
@@ -473,9 +466,9 @@ namespace ICEPatcher
                 if (File.Exists(Path.Combine(pso2binPath, "data", w32folder, relativePath)) ||
                         File.Exists(Path.Combine(pso2binPath, "data", "dlc", w32folder, relativePath)))
                 {
-                    string PSO2IcePath = File.Exists(Path.Combine(pso2binPath, "data", w32folder, relativePath)) ?
-                                         Path.Combine(pso2binPath, "data", w32folder, relativePath) :
-                                         Path.Combine(pso2binPath, "data", "dlc", w32folder, relativePath);
+                    string PSO2IcePath = File.Exists(Path.Combine(pso2binPath, "data", "dlc", w32folder, relativePath)) ?
+                                             Path.Combine(pso2binPath, "data", "dlc", w32folder, relativePath) :
+                                             Path.Combine(pso2binPath, "data", w32folder, relativePath);
 
                     List<string> filesToPatchList = new List<string>();
                     foreach (var filePath in iceFolder.Value)
@@ -494,8 +487,7 @@ namespace ICEPatcher
                         Logger.Log("Applied changes on: " + PSO2IcePath);
                     }
                 }
-
-            }
+            });
         }
 
         public void ApplyPatch(string pso2binPath, string patchName, ProgressBar progressBar, bool backup = false)
@@ -511,33 +503,29 @@ namespace ICEPatcher
                 return;
             }
 
-            foreach (var w32path in Directory.GetDirectories(patchesPath))
+            Parallel.ForEach(Directory.GetDirectories(patchesPath), w32path =>
             {
                 string w32folder = Path.GetFileName(w32path);
 
-                if (!w32folder.Contains("win32")) continue;
+                if (!w32folder.Contains("win32")) return;
 
-                bool isReboot = false;
+                bool isReboot = w32folder.Contains("reboot");
 
-                if (w32folder.Contains("reboot")) isReboot = true;
-
-                foreach (var subpath in Directory.GetDirectories(w32path, "*", SearchOption.AllDirectories))
+                Parallel.ForEach(Directory.GetDirectories(w32path, "*", SearchOption.AllDirectories), subpath =>
                 {
                     string relativePath = Path.GetRelativePath(w32path, subpath);
                     string patchIceFolderPath = Path.Combine(patchesPath, w32path, relativePath);
 
-                    // if subpath contains a folder we skip
-                    if (Directory.GetDirectories(subpath).Any()) continue;
+                    if (Directory.GetDirectories(subpath).Any()) return; // if subpath contains a folder we skip
 
-                    // if subpath is empty we skip
-                    if (!Directory.GetFiles(subpath).Any()) continue;
+                    if (!Directory.GetFiles(subpath).Any()) return; // if subpath is empty we skip
 
                     if (File.Exists(Path.Combine(pso2binPath, "data", w32folder, relativePath)) ||
                         File.Exists(Path.Combine(pso2binPath, "data", "dlc", w32folder, relativePath)) ||
                         File.Exists(Path.Combine(pso2binPath, "data", w32folder, CalculateMD5Hash(relativePath + ".ice", isReboot))) ||
                         File.Exists(Path.Combine(pso2binPath, "data", "dlc", w32folder, CalculateMD5Hash(relativePath + ".ice", isReboot))))
                     {
-                        string PSO2IcePath =    File.Exists(Path.Combine(pso2binPath, "data", w32folder, relativePath)) ?
+                        string PSO2IcePath = File.Exists(Path.Combine(pso2binPath, "data", w32folder, relativePath)) ?
                                                 Path.Combine(pso2binPath, "data", w32folder, relativePath) :
 
                                                 File.Exists(Path.Combine(pso2binPath, "data", "dlc", w32folder, relativePath)) ?
@@ -557,8 +545,8 @@ namespace ICEPatcher
                             Logger.Log("Applied changes on: " + PSO2IcePath + " from " + patchName);
                         }
                     }
-                }
-            }
+                });
+            });
         }
     }
 }
