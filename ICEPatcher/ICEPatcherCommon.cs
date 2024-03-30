@@ -248,6 +248,7 @@ namespace ICEPatcher
                     byte[] patchedFile = PatchFile(groupFile, filesToPatchList[i]);
                     patchedFiles.Add(patchedFile);
                     isPatched = true;
+                    filesToPatchList.Remove(filesToPatchList[i]);
                     i++;
                     progressBar.Invoke((MethodInvoker)delegate { progressBar.PerformStep(); });
                 }
@@ -256,6 +257,7 @@ namespace ICEPatcher
                     byte[] patchedFile = PatchTextFile(groupFile, filesToPatchList[i], "yaml");
                     patchedFiles.Add(patchedFile);
                     isPatched = true;
+                    filesToPatchList.Remove(filesToPatchList[i]);
                     i++;
                     progressBar.Invoke((MethodInvoker)delegate { progressBar.PerformStep(); });
                 }
@@ -264,6 +266,7 @@ namespace ICEPatcher
                     byte[] patchedFile = PatchTextFile(groupFile, filesToPatchList[i], "csv");
                     patchedFiles.Add(patchedFile);
                     isPatched = true;
+                    filesToPatchList.Remove(filesToPatchList[i]);
                     i++;
                     progressBar.Invoke((MethodInvoker)delegate { progressBar.PerformStep(); });
                 }
@@ -392,40 +395,6 @@ namespace ICEPatcher
             }
 
             return new Dictionary<string, string>();
-        }
-        private void ProcessFileList(string patchesPath)
-        {
-            if (File.Exists(Path.Combine(patchesPath, "filelist.txt")))
-            {
-                Debug.WriteLine("Found filelist: " + Path.Combine(patchesPath, "filelist.txt"));
-                Dictionary<string, string> fileList = ReadFileList(patchesPath);
-
-                foreach (string root in Directory.GetDirectories(patchesPath, "*", SearchOption.AllDirectories))
-                {
-                    Debug.WriteLine($"{root}");
-                    foreach (string filePath in Directory.GetFiles(root))
-                    {
-                        string file = Path.GetFileName(filePath);
-                        Debug.WriteLine($"{file}");
-                        if (fileList.ContainsKey(file))
-                        {
-                            string w32folder = "win32_na";
-                            if (fileList[file].Length > 2 && fileList[file][2] == '\\')
-                            {
-                                w32folder = "win32reboot_na";
-                            }
-
-                            string outputFolderPath = Path.Combine(patchesPath, w32folder, fileList[file]);
-                            if (!Directory.Exists(outputFolderPath))
-                            {
-                                Directory.CreateDirectory(outputFolderPath);
-                            }
-                            File.Copy(Path.Combine(root, file), Path.Combine(outputFolderPath, file));
-                            Debug.WriteLine(Path.Combine(root, file));
-                        }
-                    }
-                }
-            }
         }
 
         private Dictionary<string, List<string>> GetFileList(string patchesPath)
