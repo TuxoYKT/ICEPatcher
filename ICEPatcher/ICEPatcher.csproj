@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -14,8 +14,45 @@
   </ItemGroup>
 
   <ItemGroup>
-	<ProjectReference Include="..\PSO2-Aqua-Library\AquaModelLibrary.Core\AquaModelLibrary.Core.csproj" />
-    <ProjectReference Include="..\PSO2-Aqua-Library\AquaModelLibrary.Data\AquaModelLibrary.Data.csproj" />
+    <Reference Include="AquaModelLibrary.Core">
+      <HintPath>..\..\..\..\Downloads\AquaToolset\net6.0-windows\AquaModelLibrary.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="AquaModelLibrary.Data">
+      <HintPath>..\..\..\..\Downloads\AquaToolset\net6.0-windows\AquaModelLibrary.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="AquaModelLibrary.Helpers">
+      <HintPath>..\..\..\..\Downloads\AquaToolset\net6.0-windows\AquaModelLibrary.Helpers.dll</HintPath>
+    </Reference>
+    <Reference Include="AquaModelLibrary.Native.X64">
+      <HintPath>..\..\..\..\Downloads\AquaToolset\net6.0-windows\AquaModelLibrary.Native.X64.dll</HintPath>
+    </Reference>
+    <Reference Include="ArchiveLib">
+      <HintPath>..\..\..\..\Downloads\AquaToolset\net6.0-windows\ArchiveLib.dll</HintPath>
+    </Reference>
+    <Reference Include="UnluacNET">
+      <HintPath>..\..\..\..\Downloads\AquaToolset\net6.0-windows\UnluacNET.dll</HintPath>
+    </Reference>
+    <Reference Include="VrSharp">
+      <HintPath>..\..\..\..\Downloads\AquaToolset\net6.0-windows\VrSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="ZamboniLib">
+      <HintPath>..\..\..\..\Downloads\AquaToolset\net6.0-windows\ZamboniLib.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 
 </Project>

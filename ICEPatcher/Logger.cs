@@ -17,7 +17,7 @@ namespace ICEPatcher
 
         public static void Log(string message)
         {
-            _textBox.Invoke((MethodInvoker)delegate { _textBox.AppendText(message + Environment.NewLine); ; });
+            // _textBox.Invoke((MethodInvoker)delegate { _textBox.AppendText(message + Environment.NewLine); ; });
         }
 
         public static void Append(string message)

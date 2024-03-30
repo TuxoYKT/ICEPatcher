@@ -1,25 +1,34 @@
 using System;
 using System.Windows.Forms;
 using Zamboni;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace ICEPatcher
 {
     public partial class MainForm : Form
     {
-        private ICEPatcherCommon icePatcherCommon = new ICEPatcherCommon();
+        private ICEPatcherCommon icePatcherCommon;
 
         public MainForm()
         {
             InitializeComponent();
-            Logger.SetTextBox(logTextBox);
+            icePatcherCommon = new ICEPatcherCommon(this);
             refreshButton_Click(null, null);
+        }
+
+        public System.Windows.Forms.ProgressBar MainFormProgressBar
+        {
+            get { return progressBar1; }
         }
 
         private void inputFileBrowseButton_Click(object sender, EventArgs e)
         {
             string inputFile = icePatcherCommon.OpenFolder();
 
-            if (inputFile != null) { inputFileTextBox.Text = inputFile; }
+            if (inputFile != null) { 
+                inputFileTextBox.Text = inputFile;
+                statusLabel.Text = "Ready";
+            }
         }
 
         private void UpdateProgressBar()
@@ -46,7 +55,7 @@ namespace ICEPatcher
                 if (patchesListBox.GetItemCheckState(i) == CheckState.Checked)
                 {
                     string checkedItem = patchesListBox.Items[i].ToString();
-                    icePatcherCommon.ApplyPatch(inputFile, checkedItem, progressBar1);
+                    icePatcherCommon.ApplyPatch(inputFile, checkedItem);
                 }
             }
         }
@@ -71,6 +80,8 @@ namespace ICEPatcher
                 return;
             }
 
+            statusLabel.Text = "Applying patches...";
+            
             progressBar1.Value = 0;
             progressBar1.Step = 1;
 
@@ -81,6 +92,9 @@ namespace ICEPatcher
             });
 
             progressBar1.Value = progressBar1.Maximum;
+
+            statusLabel.Text = "Done";
+            MessageBox.Show("Patches applied successfully.", "ICE Patcher", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             patchButton.Enabled = true;
         }
@@ -95,7 +109,12 @@ namespace ICEPatcher
             SaveCheckedState();
             var previousItems = patchesListBox.Items.Cast<object>().ToList();
             patchesListBox.Items.Clear();
-            patchesListBox.Items.AddRange(icePatcherCommon.GetPatches());
+            string[] patches = icePatcherCommon.GetPatches();
+            if (patches != null)
+            {
+                patchesListBox.Items.AddRange(patches);
+
+            }
             UpdateCheckedState(previousItems);
         }
 
@@ -118,6 +137,25 @@ namespace ICEPatcher
                     patchesListBox.SetItemChecked(i, checkedStateList[previousItems.IndexOf(item)]);
                 }
             }
+        }
+
+        private void openFolderButton_Click(object sender, EventArgs e)
+        {
+            string executablePath = AppDomain.CurrentDomain.BaseDirectory;
+            string patchPath = Path.Combine(executablePath, "Patches");
+
+            if (!Directory.Exists(patchPath)) {
+                DialogResult result = MessageBox.Show("The Patches directory does not exist. Do you want to create it?", "Create Patches Directory", MessageBoxButtons.YesNo);
+                if (result == DialogResult.Yes)
+                {
+                    Directory.CreateDirectory(patchPath);
+                    System.Diagnostics.Process.Start("explorer.exe", patchPath);
+                }
+                return;
+            }
+
+            // open folder patchPath in file explorer
+            System.Diagnostics.Process.Start("explorer.exe", patchPath);
         }
     }
 }
