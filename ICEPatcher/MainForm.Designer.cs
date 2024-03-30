@@ -37,7 +37,7 @@
             refreshButton = new Button();
             progressBar1 = new ProgressBar();
             openFolderButton = new Button();
-            label1 = new Label();
+            statusLabel = new Label();
             SuspendLayout();
             // 
             // inputLabel
@@ -54,13 +54,13 @@
             inputFileTextBox.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             inputFileTextBox.Location = new Point(12, 27);
             inputFileTextBox.Name = "inputFileTextBox";
-            inputFileTextBox.Size = new Size(647, 23);
+            inputFileTextBox.Size = new Size(391, 23);
             inputFileTextBox.TabIndex = 1;
             // 
             // inputFileBrowseButton
             // 
             inputFileBrowseButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            inputFileBrowseButton.Location = new Point(665, 27);
+            inputFileBrowseButton.Location = new Point(409, 27);
             inputFileBrowseButton.Name = "inputFileBrowseButton";
             inputFileBrowseButton.Size = new Size(75, 23);
             inputFileBrowseButton.TabIndex = 2;
@@ -80,7 +80,7 @@
             // patchButton
             // 
             patchButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            patchButton.Location = new Point(665, 452);
+            patchButton.Location = new Point(409, 254);
             patchButton.Name = "patchButton";
             patchButton.Size = new Size(75, 23);
             patchButton.TabIndex = 7;
@@ -94,13 +94,13 @@
             patchesListBox.FormattingEnabled = true;
             patchesListBox.Location = new Point(13, 71);
             patchesListBox.Name = "patchesListBox";
-            patchesListBox.Size = new Size(646, 310);
+            patchesListBox.Size = new Size(390, 112);
             patchesListBox.TabIndex = 8;
             // 
             // refreshButton
             // 
             refreshButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            refreshButton.Location = new Point(665, 71);
+            refreshButton.Location = new Point(409, 71);
             refreshButton.Name = "refreshButton";
             refreshButton.Size = new Size(75, 23);
             refreshButton.TabIndex = 9;
@@ -111,16 +111,16 @@
             // progressBar1
             // 
             progressBar1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            progressBar1.Location = new Point(12, 423);
+            progressBar1.Location = new Point(12, 225);
             progressBar1.Name = "progressBar1";
-            progressBar1.Size = new Size(728, 23);
+            progressBar1.Size = new Size(472, 23);
             progressBar1.Step = 1;
             progressBar1.TabIndex = 10;
             // 
             // openFolderButton
             // 
             openFolderButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            openFolderButton.Location = new Point(665, 344);
+            openFolderButton.Location = new Point(409, 143);
             openFolderButton.Name = "openFolderButton";
             openFolderButton.Size = new Size(75, 40);
             openFolderButton.TabIndex = 11;
@@ -128,22 +128,22 @@
             openFolderButton.UseVisualStyleBackColor = true;
             openFolderButton.Click += openFolderButton_Click;
             // 
-            // label1
+            // statusLabel
             // 
-            label1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            label1.AutoSize = true;
-            label1.Location = new Point(13, 405);
-            label1.Name = "label1";
-            label1.Size = new Size(38, 15);
-            label1.TabIndex = 12;
-            label1.Text = "label1";
+            statusLabel.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            statusLabel.AutoSize = true;
+            statusLabel.Location = new Point(13, 207);
+            statusLabel.Name = "statusLabel";
+            statusLabel.Size = new Size(127, 15);
+            statusLabel.TabIndex = 12;
+            statusLabel.Text = "pso2_bin folder not set";
             // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(752, 487);
-            Controls.Add(label1);
+            ClientSize = new Size(496, 289);
+            Controls.Add(statusLabel);
             Controls.Add(openFolderButton);
             Controls.Add(progressBar1);
             Controls.Add(refreshButton);
@@ -153,7 +153,7 @@
             Controls.Add(inputFileBrowseButton);
             Controls.Add(inputFileTextBox);
             Controls.Add(inputLabel);
-            MinimumSize = new Size(768, 326);
+            MinimumSize = new Size(512, 328);
             Name = "MainForm";
             Text = "ICEPatcher";
             ResumeLayout(false);
@@ -171,6 +171,6 @@
         private Button refreshButton;
         private ProgressBar progressBar1;
         private Button openFolderButton;
-        private Label label1;
+        private Label statusLabel;
     }
 }

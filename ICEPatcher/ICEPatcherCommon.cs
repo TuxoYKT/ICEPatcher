@@ -12,12 +12,22 @@ using System.Reflection;
 using System.Security.Cryptography;
 using MethodInvoker = System.Windows.Forms.MethodInvoker;
 using System.Diagnostics;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using ProgressBar = System.Windows.Forms.ProgressBar;
+using System.IO.Compression;
 
 
 namespace ICEPatcher
 {
     public class ICEPatcherCommon
     {
+        private MainForm mainForm;
+
+        public ICEPatcherCommon(MainForm mainForm)
+        {
+            this.mainForm = mainForm;
+        }
+
         public static string OpenFile()
         {
             OpenFileDialog openFileDialog = new OpenFileDialog
@@ -200,14 +210,14 @@ namespace ICEPatcher
             }
         }
 
-        public byte[] PatchIceFile(string inputFile, string patchDirectory, ProgressBar progressBar, List<string> filesToPatchList = null)
+        public byte[] PatchIceFile(string inputFile, string patchDirectory, List<string> filesToPatchList = null)
         {
             // Debug.WriteLine("Input file: " + inputFile);
 
             byte[] buffer = System.IO.File.ReadAllBytes(inputFile);
             IceFile iceFile = IceFile.LoadIceFile(new MemoryStream(buffer));
-            List<byte[]> patchedGroupOneFiles = PatchGroupFiles(iceFile.groupOneFiles, patchDirectory, progressBar, true, filesToPatchList);
-            List<byte[]> patchedGroupTwoFiles = PatchGroupFiles(iceFile.groupTwoFiles, patchDirectory, progressBar, false, filesToPatchList);
+            List<byte[]> patchedGroupOneFiles = PatchGroupFiles(iceFile.groupOneFiles, patchDirectory, true, filesToPatchList);
+            List<byte[]> patchedGroupTwoFiles = PatchGroupFiles(iceFile.groupTwoFiles, patchDirectory, false, filesToPatchList);
 
             IceArchiveHeader header = new();
             byte[] rawData = new IceV4File(header.GetBytes(), patchedGroupOneFiles.ToArray(), patchedGroupTwoFiles.ToArray()).getRawData(false, false);
@@ -215,9 +225,10 @@ namespace ICEPatcher
             return rawData;
         }
 
-
-        private List<byte[]> PatchGroupFiles(byte[][] groupFiles, string patchDirectory, ProgressBar progressBar, bool isGroupOne, List<string> filesToPatchList = null)
+        private List<byte[]> PatchGroupFiles(byte[][] groupFiles, string patchDirectory, bool isGroupOne, List<string> filesToPatchList = null)
         {
+            ProgressBar progressBar = mainForm.MainFormProgressBar;
+
             List<byte[]> patchedFiles = new List<byte[]>();
             bool isPatched = false;
 
@@ -270,6 +281,7 @@ namespace ICEPatcher
 
             return patchedFiles;
         }
+
 
         private byte[] PatchFile(byte[] groupFile, string fullPath)
         {
@@ -448,7 +460,7 @@ namespace ICEPatcher
             return output;
         }
 
-        private void ProcessArksLayerPatch(string pso2binPath, string patchesPath, ProgressBar progressBar, bool isJapaneseClient = false)
+        private void ProcessArksLayerPatch(string pso2binPath, string patchesPath, bool isJapaneseClient = false)
         {
             Debug.WriteLine("Found filelist: " + Path.Combine(patchesPath, "filelist.txt"));
             Dictionary<string, List<string>> fileList = GetFileList(patchesPath);
@@ -481,7 +493,7 @@ namespace ICEPatcher
 
                     string patchIceFolderPath = Path.Combine(patchesPath, w32folder, relativePath);
 
-                    byte[] rawData = PatchIceFile(PSO2IcePath, patchIceFolderPath, progressBar, filesToPatchList);
+                    byte[] rawData = PatchIceFile(PSO2IcePath, patchIceFolderPath,filesToPatchList);
 
                     if (rawData != null)
                     {
@@ -492,18 +504,9 @@ namespace ICEPatcher
             });
         }
 
-        public void ApplyPatch(string pso2binPath, string patchName, ProgressBar progressBar, bool backup = false)
+        private void ApplyPatchFromFolder(string patchName, string pso2binPath)
         {
             string patchesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Patches", patchName);
-            Debug.WriteLine("Applying Patch: " + patchName);
-
-            // ProcessArksLayerPatch(patchesPath); // this is done for Arks-Layer patch
-
-            if (File.Exists(Path.Combine(patchesPath, "filelist.txt")))
-            {
-                ProcessArksLayerPatch(pso2binPath, patchesPath, progressBar, false);
-                return;
-            }
 
             Parallel.ForEach(Directory.GetDirectories(patchesPath), w32path =>
             {
@@ -539,7 +542,7 @@ namespace ICEPatcher
 
                         List<string> filesToPatchList = Directory.GetFiles(patchIceFolderPath, "*.*", SearchOption.AllDirectories).ToList();
 
-                        byte[] rawData = PatchIceFile(PSO2IcePath, patchIceFolderPath, progressBar, filesToPatchList);
+                        byte[] rawData = PatchIceFile(PSO2IcePath, patchIceFolderPath, filesToPatchList);
 
                         if (rawData != null)
                         {
@@ -549,6 +552,22 @@ namespace ICEPatcher
                     }
                 });
             });
+        }
+
+        public void ApplyPatch(string pso2binPath, string patchName, bool backup = false)
+        {
+            string patchesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Patches", patchName);
+            Debug.WriteLine("Applying Patch: " + patchName);
+
+            // ProcessArksLayerPatch(patchesPath); // this is done for Arks-Layer patch
+
+            if (File.Exists(Path.Combine(patchesPath, "filelist.txt")))
+            {
+                ProcessArksLayerPatch(pso2binPath, patchesPath, false);
+                return;
+            }
+
+            ApplyPatchFromFolder(patchName, pso2binPath);
         }
     }
 }
