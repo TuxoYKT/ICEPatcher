@@ -32,12 +32,12 @@
             inputFileTextBox = new TextBox();
             inputFileBrowseButton = new Button();
             patchLabel = new Label();
-            logTextBox = new TextBox();
             patchButton = new Button();
             patchesListBox = new CheckedListBox();
             refreshButton = new Button();
             progressBar1 = new ProgressBar();
             openFolderButton = new Button();
+            label1 = new Label();
             SuspendLayout();
             // 
             // inputLabel
@@ -54,13 +54,13 @@
             inputFileTextBox.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             inputFileTextBox.Location = new Point(12, 27);
             inputFileTextBox.Name = "inputFileTextBox";
-            inputFileTextBox.Size = new Size(604, 23);
+            inputFileTextBox.Size = new Size(647, 23);
             inputFileTextBox.TabIndex = 1;
             // 
             // inputFileBrowseButton
             // 
             inputFileBrowseButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            inputFileBrowseButton.Location = new Point(622, 27);
+            inputFileBrowseButton.Location = new Point(665, 27);
             inputFileBrowseButton.Name = "inputFileBrowseButton";
             inputFileBrowseButton.Size = new Size(75, 23);
             inputFileBrowseButton.TabIndex = 2;
@@ -77,21 +77,10 @@
             patchLabel.TabIndex = 3;
             patchLabel.Text = "Available Patches";
             // 
-            // logTextBox
-            // 
-            logTextBox.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            logTextBox.Font = new Font("Courier New", 9F);
-            logTextBox.Location = new Point(13, 473);
-            logTextBox.Multiline = true;
-            logTextBox.Name = "logTextBox";
-            logTextBox.ScrollBars = ScrollBars.Vertical;
-            logTextBox.Size = new Size(684, 207);
-            logTextBox.TabIndex = 6;
-            // 
             // patchButton
             // 
             patchButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            patchButton.Location = new Point(622, 686);
+            patchButton.Location = new Point(665, 452);
             patchButton.Name = "patchButton";
             patchButton.Size = new Size(75, 23);
             patchButton.TabIndex = 7;
@@ -105,13 +94,13 @@
             patchesListBox.FormattingEnabled = true;
             patchesListBox.Location = new Point(13, 71);
             patchesListBox.Name = "patchesListBox";
-            patchesListBox.Size = new Size(603, 346);
+            patchesListBox.Size = new Size(646, 310);
             patchesListBox.TabIndex = 8;
             // 
             // refreshButton
             // 
             refreshButton.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            refreshButton.Location = new Point(622, 71);
+            refreshButton.Location = new Point(665, 71);
             refreshButton.Name = "refreshButton";
             refreshButton.Size = new Size(75, 23);
             refreshButton.TabIndex = 9;
@@ -122,15 +111,16 @@
             // progressBar1
             // 
             progressBar1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            progressBar1.Location = new Point(15, 444);
+            progressBar1.Location = new Point(12, 423);
             progressBar1.Name = "progressBar1";
-            progressBar1.Size = new Size(682, 23);
+            progressBar1.Size = new Size(728, 23);
             progressBar1.Step = 1;
             progressBar1.TabIndex = 10;
             // 
             // openFolderButton
             // 
-            openFolderButton.Location = new Point(622, 377);
+            openFolderButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            openFolderButton.Location = new Point(665, 344);
             openFolderButton.Name = "openFolderButton";
             openFolderButton.Size = new Size(75, 40);
             openFolderButton.TabIndex = 11;
@@ -138,21 +128,32 @@
             openFolderButton.UseVisualStyleBackColor = true;
             openFolderButton.Click += openFolderButton_Click;
             // 
+            // label1
+            // 
+            label1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            label1.AutoSize = true;
+            label1.Location = new Point(13, 405);
+            label1.Name = "label1";
+            label1.Size = new Size(38, 15);
+            label1.TabIndex = 12;
+            label1.Text = "label1";
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(709, 719);
+            ClientSize = new Size(752, 487);
+            Controls.Add(label1);
             Controls.Add(openFolderButton);
             Controls.Add(progressBar1);
             Controls.Add(refreshButton);
             Controls.Add(patchesListBox);
             Controls.Add(patchButton);
-            Controls.Add(logTextBox);
             Controls.Add(patchLabel);
             Controls.Add(inputFileBrowseButton);
             Controls.Add(inputFileTextBox);
             Controls.Add(inputLabel);
+            MinimumSize = new Size(768, 326);
             Name = "MainForm";
             Text = "ICEPatcher";
             ResumeLayout(false);
@@ -165,11 +166,11 @@
         private TextBox inputFileTextBox;
         private Button inputFileBrowseButton;
         private Label patchLabel;
-        private TextBox logTextBox;
         private Button patchButton;
         private CheckedListBox patchesListBox;
         private Button refreshButton;
         private ProgressBar progressBar1;
         private Button openFolderButton;
+        private Label label1;
     }
 }

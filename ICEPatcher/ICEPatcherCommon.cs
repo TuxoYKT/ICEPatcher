@@ -10,13 +10,15 @@ using static Zamboni.IceFileFormats.IceHeaderStructures;
 using System.Windows.Forms;
 using System.Reflection;
 using System.Security.Cryptography;
+using MethodInvoker = System.Windows.Forms.MethodInvoker;
+using System.Diagnostics;
 
 
 namespace ICEPatcher
 {
     public class ICEPatcherCommon
     {
-        public string OpenFile()
+        public static string OpenFile()
         {
             OpenFileDialog openFileDialog = new OpenFileDialog
             {   
@@ -89,7 +91,7 @@ namespace ICEPatcher
             catch
             {
                 string error = filePath + " not an ICE file";
-                Logger.Log(filePath + " not an ICE file");
+                Debug.WriteLine(filePath + " not an ICE file");
             }
 
             buffer = null;
@@ -200,7 +202,7 @@ namespace ICEPatcher
 
         public byte[] PatchIceFile(string inputFile, string patchDirectory, ProgressBar progressBar, List<string> filesToPatchList = null)
         {
-            // Logger.Log("Input file: " + inputFile);
+            // Debug.WriteLine("Input file: " + inputFile);
 
             byte[] buffer = System.IO.File.ReadAllBytes(inputFile);
             IceFile iceFile = IceFile.LoadIceFile(new MemoryStream(buffer));
@@ -219,8 +221,8 @@ namespace ICEPatcher
             List<byte[]> patchedFiles = new List<byte[]>();
             bool isPatched = false;
 
-            // if (isGroupOne) Logger.Log("group1 files:");
-            // else Logger.Log("group2 files:");
+            // if (isGroupOne) Debug.WriteLine("group1 files:");
+            // else Debug.WriteLine("group2 files:");
 
             foreach (var groupFile in groupFiles)
             {
@@ -257,13 +259,13 @@ namespace ICEPatcher
                 else
                 {
                     patchedFiles.Add(groupFile);
-                    // Logger.Log(" - " + IceFile.getFileName(groupFile));
+                    // Debug.WriteLine(" - " + IceFile.getFileName(groupFile));
                 }
             }
 
             if (!isPatched)
             {
-                // Logger.Log("Nothing to patch in this group. Skipping...");
+                // Debug.WriteLine("Nothing to patch in this group. Skipping...");
             }
 
             return patchedFiles;
@@ -273,7 +275,7 @@ namespace ICEPatcher
         {
             List<byte> bytes = new(File.ReadAllBytes(fullPath));
             bytes.InsertRange(0, new IceFileHeader(fullPath, (uint)bytes.Count).GetBytes());
-            // Logger.Log(" - " + IceFile.getFileName(groupFile) + " [PATCHED]");
+            // Debug.WriteLine(" - " + IceFile.getFileName(groupFile) + " [PATCHED]");
 
             return bytes.ToArray();
         }
@@ -293,7 +295,7 @@ namespace ICEPatcher
                 List<byte> bytes = new(textFile);
                 bytes.InsertRange(0, new IceFileHeader(groupFileName, (uint)bytes.Count).GetBytes());
 
-                // Logger.Log(" - " + IceFile.getFileName(groupFile) + " [PATCHED WITH YAML]");
+                // Debug.WriteLine(" - " + IceFile.getFileName(groupFile) + " [PATCHED WITH YAML]");
 
                 return bytes.ToArray();
             }
@@ -306,11 +308,11 @@ namespace ICEPatcher
                 List<byte> bytes = new(textFile);
                 bytes.InsertRange(0, new IceFileHeader(groupFileName, (uint)bytes.Count).GetBytes());
 
-                // Logger.Log(" - " + IceFile.getFileName(groupFile) + " [PATCHED WITH CSV]");
+                // Debug.WriteLine(" - " + IceFile.getFileName(groupFile) + " [PATCHED WITH CSV]");
 
                 return bytes.ToArray();
             }
-            else { Logger.Log("Format not supported: " + format); }
+            else { Debug.WriteLine("Format not supported: " + format); }
 
             return groupFile;
         }
@@ -333,7 +335,7 @@ namespace ICEPatcher
             }
             catch (Exception err)
             {
-                Logger.Log("Error reading folder: " + err.Message);
+                Debug.WriteLine("Error reading folder: " + err.Message);
             }
 
             return null;
@@ -383,16 +385,16 @@ namespace ICEPatcher
         {
             if (File.Exists(Path.Combine(patchesPath, "filelist.txt")))
             {
-                Logger.Log("Found filelist: " + Path.Combine(patchesPath, "filelist.txt"));
+                Debug.WriteLine("Found filelist: " + Path.Combine(patchesPath, "filelist.txt"));
                 Dictionary<string, string> fileList = ReadFileList(patchesPath);
 
                 foreach (string root in Directory.GetDirectories(patchesPath, "*", SearchOption.AllDirectories))
                 {
-                    Logger.Log($"{root}");
+                    Debug.WriteLine($"{root}");
                     foreach (string filePath in Directory.GetFiles(root))
                     {
                         string file = Path.GetFileName(filePath);
-                        Logger.Log($"{file}");
+                        Debug.WriteLine($"{file}");
                         if (fileList.ContainsKey(file))
                         {
                             string w32folder = "win32_na";
@@ -407,7 +409,7 @@ namespace ICEPatcher
                                 Directory.CreateDirectory(outputFolderPath);
                             }
                             File.Copy(Path.Combine(root, file), Path.Combine(outputFolderPath, file));
-                            Logger.Log(Path.Combine(root, file));
+                            Debug.WriteLine(Path.Combine(root, file));
                         }
                     }
                 }
@@ -430,7 +432,7 @@ namespace ICEPatcher
 
                     if (fileList.ContainsKey(file))
                     {
-                        //Logger.Log(file + " in " + fileList[file]);
+                        //Debug.WriteLine(file + " in " + fileList[file]);
 
                         string outputFolderPath = Path.Combine(root, file);
 
@@ -448,13 +450,13 @@ namespace ICEPatcher
 
         private void ProcessArksLayerPatch(string pso2binPath, string patchesPath, ProgressBar progressBar, bool isJapaneseClient = false)
         {
-            Logger.Log("Found filelist: " + Path.Combine(patchesPath, "filelist.txt"));
+            Debug.WriteLine("Found filelist: " + Path.Combine(patchesPath, "filelist.txt"));
             Dictionary<string, List<string>> fileList = GetFileList(patchesPath);
 
             Parallel.ForEach(fileList, iceFolder =>
             {
                 string relativePath = iceFolder.Key;
-                //Logger.Log(relativePath);
+                //Debug.WriteLine(relativePath);
 
                 string w32folder = "win32";
                 if (relativePath.Length > 2 && relativePath[2] == '\\')
@@ -474,7 +476,7 @@ namespace ICEPatcher
                     foreach (var filePath in iceFolder.Value)
                     {
                         filesToPatchList.Add(filePath);
-                        //Logger.Log("    " + filePath);
+                        //Debug.WriteLine("    " + filePath);
                     }
 
                     string patchIceFolderPath = Path.Combine(patchesPath, w32folder, relativePath);
@@ -484,7 +486,7 @@ namespace ICEPatcher
                     if (rawData != null)
                     {
                         File.WriteAllBytes(PSO2IcePath, rawData);
-                        Logger.Log("Applied changes on: " + PSO2IcePath);
+                        Debug.WriteLine("Applied changes on: " + PSO2IcePath);
                     }
                 }
             });
@@ -493,7 +495,7 @@ namespace ICEPatcher
         public void ApplyPatch(string pso2binPath, string patchName, ProgressBar progressBar, bool backup = false)
         {
             string patchesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Patches", patchName);
-            Logger.Log("Applying Patch: " + patchName);
+            Debug.WriteLine("Applying Patch: " + patchName);
 
             // ProcessArksLayerPatch(patchesPath); // this is done for Arks-Layer patch
 
@@ -542,7 +544,7 @@ namespace ICEPatcher
                         if (rawData != null)
                         {
                             File.WriteAllBytes(PSO2IcePath, rawData);
-                            Logger.Log("Applied changes on: " + PSO2IcePath + " from " + patchName);
+                            Debug.WriteLine("Applied changes on: " + PSO2IcePath + " from " + patchName);
                         }
                     }
                 });

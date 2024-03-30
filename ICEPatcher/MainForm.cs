@@ -11,7 +11,6 @@ namespace ICEPatcher
         public MainForm()
         {
             InitializeComponent();
-            Logger.SetTextBox(logTextBox);
             refreshButton_Click(null, null);
         }
 
@@ -95,7 +94,12 @@ namespace ICEPatcher
             SaveCheckedState();
             var previousItems = patchesListBox.Items.Cast<object>().ToList();
             patchesListBox.Items.Clear();
-            patchesListBox.Items.AddRange(icePatcherCommon.GetPatches());
+            string[] patches = icePatcherCommon.GetPatches();
+            if (patches != null)
+            {
+                patchesListBox.Items.AddRange(patches);
+
+            }
             UpdateCheckedState(previousItems);
         }
 
