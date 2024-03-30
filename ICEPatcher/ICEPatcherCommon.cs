@@ -241,39 +241,46 @@ namespace ICEPatcher
                 string fileNameFromIce = IceFile.getFileName(groupFile);
                 string fileNameFromIceWithoutExtenstion = Path.GetFileNameWithoutExtension(fileNameFromIce);
 
-                while (fileNameFromIceWithoutExtenstion != Path.GetFileNameWithoutExtension(filesToPatchList[i]) && i < filesToPatchList.Count - 1) i++;
+                if (filesToPatchList.Count != 0)
+                {
+                    while (fileNameFromIceWithoutExtenstion != Path.GetFileNameWithoutExtension(filesToPatchList[i]) && i < filesToPatchList.Count - 1) i++;
 
-                if (fileNameFromIce == Path.GetFileName(filesToPatchList[i]))
-                { 
-                    byte[] patchedFile = PatchFile(groupFile, filesToPatchList[i]);
-                    patchedFiles.Add(patchedFile);
-                    isPatched = true;
-                    filesToPatchList.Remove(filesToPatchList[i]);
-                    i++;
-                    progressBar.Invoke((MethodInvoker)delegate { progressBar.PerformStep(); });
-                }
-                else if (DoesThisFileExist(Path.Combine(Path.GetDirectoryName(filesToPatchList[i]), IceFile.getFileName(groupFile)), "text", "yaml"))
-                {
-                    byte[] patchedFile = PatchTextFile(groupFile, filesToPatchList[i], "yaml");
-                    patchedFiles.Add(patchedFile);
-                    isPatched = true;
-                    filesToPatchList.Remove(filesToPatchList[i]);
-                    i++;
-                    progressBar.Invoke((MethodInvoker)delegate { progressBar.PerformStep(); });
-                }
-                else if (DoesThisFileExist(Path.Combine(Path.GetDirectoryName(filesToPatchList[i]), IceFile.getFileName(groupFile)), "text", "csv"))
-                {
-                    byte[] patchedFile = PatchTextFile(groupFile, filesToPatchList[i], "csv");
-                    patchedFiles.Add(patchedFile);
-                    isPatched = true;
-                    filesToPatchList.Remove(filesToPatchList[i]);
-                    i++;
-                    progressBar.Invoke((MethodInvoker)delegate { progressBar.PerformStep(); });
+                    if (fileNameFromIce == Path.GetFileName(filesToPatchList[i]))
+                    {
+                        byte[] patchedFile = PatchFile(groupFile, filesToPatchList[i]);
+                        patchedFiles.Add(patchedFile);
+                        isPatched = true;
+                        filesToPatchList.Remove(filesToPatchList[i]);
+                        i++;
+                        progressBar.Invoke((MethodInvoker)delegate { progressBar.PerformStep(); });
+                    }
+                    else if (DoesThisFileExist(Path.Combine(Path.GetDirectoryName(filesToPatchList[i]), IceFile.getFileName(groupFile)), "text", "yaml"))
+                    {
+                        byte[] patchedFile = PatchTextFile(groupFile, filesToPatchList[i], "yaml");
+                        patchedFiles.Add(patchedFile);
+                        isPatched = true;
+                        filesToPatchList.Remove(filesToPatchList[i]);
+                        i++;
+                        progressBar.Invoke((MethodInvoker)delegate { progressBar.PerformStep(); });
+                    }
+                    else if (DoesThisFileExist(Path.Combine(Path.GetDirectoryName(filesToPatchList[i]), IceFile.getFileName(groupFile)), "text", "csv"))
+                    {
+                        byte[] patchedFile = PatchTextFile(groupFile, filesToPatchList[i], "csv");
+                        patchedFiles.Add(patchedFile);
+                        isPatched = true;
+                        filesToPatchList.Remove(filesToPatchList[i]);
+                        i++;
+                        progressBar.Invoke((MethodInvoker)delegate { progressBar.PerformStep(); });
+                    }
+                    else
+                    {
+                        patchedFiles.Add(groupFile);
+                        // Debug.WriteLine(" - " + IceFile.getFileName(groupFile));
+                    }
                 }
                 else
                 {
                     patchedFiles.Add(groupFile);
-                    // Debug.WriteLine(" - " + IceFile.getFileName(groupFile));
                 }
             }
 
