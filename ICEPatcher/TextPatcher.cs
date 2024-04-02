@@ -125,6 +125,45 @@ namespace ICEPatcher
             return csvData;
         }
 
+        public Dictionary<string, List<string>> ReadCSVFromMemory(byte[] csvData)
+        {
+            Logger.Log("Reading CSV: " + csvPath);
+
+            Dictionary<string, List<string>> csvDictionary = new Dictionary<string, List<string>>();
+
+            using (MemoryStream stream = new MemoryStream(csvData))
+            using (TextFieldParser parser = new TextFieldParser(stream))
+            {
+                parser.TextFieldType = FieldType.Delimited;
+                parser.SetDelimiters(",");
+
+                while (!parser.EndOfData)
+                {
+                    string[] fields = parser.ReadFields();
+                    if (fields.Length >= 2)
+                    {
+                        string name = fields[0].Split('#')[0]; // Strip after #
+                        string value = Regex.Unescape(fields[1].Trim('\"'));
+
+                        if (!csvDictionary.ContainsKey(name))
+                        {
+                            csvDictionary[name] = new List<string>();
+                        }
+
+                        if (!ContainsJapaneseText(value) && !IsUntranslated(value))
+                        {
+                            csvDictionary[name].Add(value);
+                        }
+                        else
+                        {
+                            csvDictionary[name].Add(null);
+                        }
+                    }
+                }
+            }
+
+            return csvDictionary;
+        }
 
         public byte[] PatchPSO2TextUsingCSV(byte[] PSO2TextInput, Dictionary<string, List<string>> csvData, string language = "en")
         {
