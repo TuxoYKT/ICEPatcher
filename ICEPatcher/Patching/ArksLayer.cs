@@ -8,14 +8,13 @@ using System.Threading.Tasks;
 
 namespace ICEPatcher
 {
-    internal class ArksLayer
+    public static class ArksLayer
     {
 
-        public bool CheckForFilelist(string patchPath)
+        public static bool CheckForFilelist(string patchPath)
         {
-            string[] files = Directory.GetFiles(patchPath, "*.txt");
 
-            foreach (string file in files)
+            foreach (string file in Directory.GetFiles(patchPath, "*.txt"))
             {
                 if (Regex.IsMatch(Path.GetFileName(file), @"filelist"))
                 {
@@ -25,46 +24,27 @@ namespace ICEPatcher
             return false;
         }
 
-        public List<string> GetFilelistFiles(string patchPath)
+        public static Dictionary<string, List<string>> ProcessFilelistFiles(string patchPath)
         {
-            List<string> filelistFiles = new();
-            string[] files = Directory.GetFiles(patchPath, "*.txt");
+            Dictionary<string, string> fileList = new Dictionary<string, string>();
 
-            foreach (string file in files)
+            foreach (var file in Directory.GetFiles(patchPath, "*.txt"))
             {
                 if (Regex.IsMatch(Path.GetFileName(file), @"filelist"))
                 {
-                    filelistFiles.Add(file);
+                    foreach (string line in File.ReadAllLines(file))
+                    {
+                        string[] parts = line.Split(',');
+                        fileList[parts[1].Trim().Replace(".text", ".csv")] = parts[0].Trim();
+                    }
                 }
             }
-            return filelistFiles;
-        }
 
-        private Dictionary<string, string> ReadFileList(string patchesPath)
-        {
-            if (File.Exists(Path.Combine(patchesPath, "filelist.txt")))
-            {
-                Dictionary<string, string> fileList = new Dictionary<string, string>();
-
-                foreach (string line in File.ReadAllLines(Path.Combine(patchesPath, "filelist.txt")))
-                {
-                    string[] parts = line.Split(',');
-                    fileList[parts[1].Trim().Replace(".text", ".csv")] = parts[0].Trim();
-                }
-
-                return fileList;
-            }
-
-            return new Dictionary<string, string>();
-        }
-
-        private Dictionary<string, List<string>> GetFileList(string patchesPath)
-        {
             Dictionary<string, List<string>> output = new Dictionary<string, List<string>>();
-            Dictionary<string, string> fileList = ReadFileList(patchesPath);
+
             List<string> excludedFolders = new List<string> { "Files", "Dummy", "Empty" };
 
-            foreach (string root in Directory.GetDirectories(patchesPath, "*", SearchOption.AllDirectories))
+            foreach (string root in Directory.GetDirectories(patchPath, "*", SearchOption.AllDirectories))
             {
                 if (excludedFolders.Contains(Path.GetFileName(root))) continue;
 
@@ -88,28 +68,68 @@ namespace ICEPatcher
             }
 
             return output;
+
         }
 
-        public void ApplyArksLayerPatchFromFolder(string patchPath, string exportPath)
+        public static void ApplyArksLayerPatchFromFolder(string patchPath, string exportPath)
         {
-            if (Patching.GetPSO2BinPath() == null)
+            string pso2binPath = Patching.GetPSO2BinPath();
+            bool isJapaneseClient = Patching.IsJapaneseClient();
+
+            if (pso2binPath == null)
             {
                 throw new Exception("PSO2BinPath is not set");
             }
 
-            if (!CheckForFilelist(patchPath))
+            Dictionary<string, List<string>> fileList = ProcessFilelistFiles(patchPath);
+
+            foreach (var iceFolder in fileList)
             {
-                Debug.WriteLine("No filelist found in " + patchPath);
-                return;
-            }
-
-            List<string> filelistFiles = GetFilelistFiles(patchPath);
+                string relativePath = iceFolder.Key;
 
 
-            foreach (var file in filelistFiles)
-            {
-                string filelistName = Path.GetFileName(file);
+                string w32folder = "win32";
+                if (relativePath.Length > 2 && relativePath[2] == '\\')
+                {
+                    w32folder = "win32reboot";
+                }
 
+                if (!isJapaneseClient) w32folder += "_na";
+
+                if (File.Exists(Path.Combine(pso2binPath, "data", w32folder, relativePath)) ||
+                        File.Exists(Path.Combine(pso2binPath, "data", "dlc", w32folder, relativePath)))
+                {
+                    string PSO2IcePath = File.Exists(Path.Combine(pso2binPath, "data", "dlc", w32folder, relativePath)) ?
+                                             Path.Combine(pso2binPath, "data", "dlc", w32folder, relativePath) :
+                                             Path.Combine(pso2binPath, "data", w32folder, relativePath);
+
+                    FilesToPatch filesToPatchList = new FilesToPatch();
+                    foreach (var filePath in iceFolder.Value)
+                    {
+                        filesToPatchList.AddFile(filePath);
+                    }
+
+                    string patchIceFolderPath = Path.Combine(patchPath, w32folder, relativePath);
+                    string patchName = Path.GetFileName(patchPath);
+
+                    byte[] rawData = Patching.PatchIceFileFromMemory(PSO2IcePath, filesToPatchList);
+
+                    if (rawData != null)
+                    {
+                        if (exportPath == null)
+                        {
+                            File.WriteAllBytes(PSO2IcePath, rawData);
+                            Debug.WriteLine("Applied changes on: " + PSO2IcePath + " from " + patchName);
+                        }
+                        else
+                        {
+                            string relativeICEExportPath = Path.Combine(exportPath, Path.GetRelativePath(Path.Combine(pso2binPath, "data"), PSO2IcePath));
+                            if (!Directory.Exists(Path.GetDirectoryName(relativeICEExportPath))) Directory.CreateDirectory(Path.GetDirectoryName(relativeICEExportPath));
+                            File.WriteAllBytes(relativeICEExportPath, rawData);
+                            Debug.WriteLine("Exported changes on: " + PSO2IcePath + " from " + patchName);
+                        }
+                    }
+                }
             }
         }
     }

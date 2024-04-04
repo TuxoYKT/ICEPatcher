@@ -55,7 +55,13 @@ namespace ICEPatcher
                 if (patchesListBox.GetItemCheckState(i) == CheckState.Checked)
                 {
                     string checkedItem = patchesListBox.Items[i].ToString();
-                    Patching.ApplyPatch(inputFile, checkedItem);
+                    string exportsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Export", checkedItem);
+                    if (!Directory.Exists(exportsPath))
+                    {
+                        Directory.CreateDirectory(exportsPath);
+                    }
+
+                    Patching.ApplyPatch(checkedItem, exportsPath);
                 }
             }
         }
@@ -65,6 +71,8 @@ namespace ICEPatcher
             patchButton.Enabled = false;
 
             string inputFile = inputFileTextBox.Text;
+
+            Patching.SetPSO2BinPath(inputFile);
 
             if (string.IsNullOrEmpty(inputFile))
             {

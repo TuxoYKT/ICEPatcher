@@ -49,12 +49,25 @@ namespace ICEPatcher
 
         public bool FileExists(string fileName)
         { return files.ContainsKey(fileName); }
+
+        public int Count { get { return files.Count; } }
     }
 
     public static class Patching
     {
         private static string pso2binPath = null;
         private static bool allowBackup = false;
+        private static bool isJapaneseClient = false;
+
+        public static void SetJapaneseClient(bool isJapanese)
+        {
+            isJapaneseClient = isJapanese;
+        }
+
+        public static bool IsJapaneseClient()
+        {
+            return isJapaneseClient;
+        }
 
         public static void SetPSO2BinPath(string path)
         {
@@ -124,21 +137,31 @@ namespace ICEPatcher
                 string fileName = IceFile.getFileName(file);
                 string extension = Path.GetExtension(fileName);
 
-                if (extension == "text")
+                if (extension == ".text")
                 {
                     // handle text patches
-                    if (filesToPatch.FileExists(fileName + ".yaml"))
+                    if (filesToPatch.FileExists(fileName + ".yaml") || filesToPatch.FileExists(Path.GetFileNameWithoutExtension(fileName) + ".yaml"))
                     {
                         // load .yaml into memory and deserialize
-                        string yamlFile = filesToPatch.GetFileName(fileName + ".yaml");
+                        string yamlFile;
+                        if (filesToPatch.FileExists(fileName + ".yaml"))
+                            yamlFile = fileName + ".yaml";
+                        else
+                            yamlFile = Path.GetFileNameWithoutExtension(fileName) + ".yaml";
+
                         byte[] patchedFile = PatchTextFile(file, filesToPatch.GetFile(yamlFile), "yaml");
                         patchedFiles.Add(patchedFile);
                         isPatched = true;
                     }
-                    else if (filesToPatch.FileExists(fileName + ".csv"))
+                    else if (filesToPatch.FileExists(fileName + ".csv") || filesToPatch.FileExists(Path.GetFileNameWithoutExtension(fileName) + ".csv"))
                     {
                         // load .csv into memory and deserialize
-                        string csvFile = filesToPatch.GetFileName(fileName + ".csv");
+                        string csvFile;
+                        if (filesToPatch.FileExists(fileName + ".csv"))
+                            csvFile = fileName + ".csv";
+                        else
+                            csvFile = Path.GetFileNameWithoutExtension(fileName) + ".csv";
+
                         byte[] patchedFile = PatchTextFile(file, filesToPatch.GetFile(csvFile), "csv");
                         patchedFiles.Add(patchedFile);
                         isPatched = true;
@@ -168,6 +191,12 @@ namespace ICEPatcher
         {
             byte[] buffer = System.IO.File.ReadAllBytes(filePath);
             IceFile iceFile = IceFile.LoadIceFile(new MemoryStream(buffer));
+
+            if (filesToPatch.Count == 0)
+            {
+                return null;
+            }
+
             List<byte[]> patchedGroupOneFiles = PatchGroupFiles(iceFile.groupOneFiles, filesToPatch);
             List<byte[]> patchedGroupTwoFiles = PatchGroupFiles(iceFile.groupTwoFiles, filesToPatch);
 
@@ -212,6 +241,9 @@ namespace ICEPatcher
 
         private static void ApplyPatchFromFolder(string patchPath, string exportPath = null)
         {
+            string pso2binPath = GetPSO2BinPath();
+            bool isJapaneseClient = IsJapaneseClient();
+
             if (pso2binPath == null)
             {
                 throw new Exception("PSO2BinPath is not set");
@@ -229,7 +261,7 @@ namespace ICEPatcher
 
                 foreach (var subpath in Directory.GetDirectories(w32path, "*", SearchOption.AllDirectories))
                 {
-                    string relativePath = Path.GetRelativePath(w32folder, subpath);
+                    string relativePath = Path.GetRelativePath(w32path, subpath);
                     string patchIceFolderPath = Path.Combine(patchPath, w32path, relativePath);
 
                     if (Directory.GetDirectories(subpath).Any()) return;
@@ -256,7 +288,7 @@ namespace ICEPatcher
 
                         if (rawData != null)
                         {
-                            if (exportPath != null)
+                            if (exportPath == null)
                             {
                                 File.WriteAllBytes(PSO2IcePath, rawData);
                                 Debug.WriteLine("Applied changes on: " + PSO2IcePath + " from " + patchName);
@@ -264,6 +296,7 @@ namespace ICEPatcher
                             else
                             {
                                 string relativeICEExportPath = Path.Combine(exportPath, Path.GetRelativePath(Path.Combine(pso2binPath, "data"), PSO2IcePath));
+                                if (!Directory.Exists(Path.GetDirectoryName(relativeICEExportPath))) Directory.CreateDirectory(Path.GetDirectoryName(relativeICEExportPath));
                                 File.WriteAllBytes(relativeICEExportPath, rawData);
                                 Debug.WriteLine("Exported changes on: " + PSO2IcePath + " from " + patchName);
                             }
@@ -278,11 +311,9 @@ namespace ICEPatcher
             string patchesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Patches", patchName);
             Debug.WriteLine("Applying patch: " + patchName);
 
-            ArksLayer arksLayer = new ArksLayer();
-
-            if (arksLayer.CheckForFilelist(patchesPath))
+            if (ArksLayer.CheckForFilelist(patchesPath))
             {
-                arksLayer.ApplyArksLayerPatchFromFolder(patchesPath, exportPath);
+                ArksLayer.ApplyArksLayerPatchFromFolder(patchesPath, exportPath);
                 return;
             }
 
