@@ -83,7 +83,7 @@ namespace ICEPatcher
 
             Dictionary<string, List<string>> fileList = ProcessFilelistFiles(patchPath);
 
-            foreach (var iceFolder in fileList)
+            Parallel.ForEach(fileList, iceFolder =>
             {
                 string relativePath = iceFolder.Key;
 
@@ -109,6 +109,15 @@ namespace ICEPatcher
                         filesToPatchList.AddFile(filePath);
                     }
 
+                    if (Patching.AllowBackup)
+                    {
+                        string backupRelativeICEPath = Path.Combine(Patching.GetBackupPath(), Path.GetRelativePath(Path.Combine(pso2binPath, "data"), PSO2IcePath));
+                        if (!File.Exists(backupRelativeICEPath))
+                        {
+                            Patching.BackupICEFile(PSO2IcePath, backupRelativeICEPath);
+                        }
+                    }
+
                     string patchIceFolderPath = Path.Combine(patchPath, w32folder, relativePath);
                     string patchName = Path.GetFileName(patchPath);
 
@@ -126,11 +135,11 @@ namespace ICEPatcher
                             string relativeICEExportPath = Path.Combine(exportPath, Path.GetRelativePath(Path.Combine(pso2binPath, "data"), PSO2IcePath));
                             if (!Directory.Exists(Path.GetDirectoryName(relativeICEExportPath))) Directory.CreateDirectory(Path.GetDirectoryName(relativeICEExportPath));
                             File.WriteAllBytes(relativeICEExportPath, rawData);
-                            Debug.WriteLine("Exported changes on: " + PSO2IcePath + " from " + patchName);
+                            Debug.WriteLine("Exported applied changes on: " + PSO2IcePath + " from " + patchName);
                         }
                     }
                 }
-            }
+            });
         }
     }
 }

@@ -38,6 +38,8 @@
             progressBar1 = new ProgressBar();
             openFolderButton = new Button();
             statusLabel = new Label();
+            exportCheckBox = new CheckBox();
+            backupCheckBox = new CheckBox();
             SuspendLayout();
             // 
             // inputLabel
@@ -138,11 +140,34 @@
             statusLabel.TabIndex = 12;
             statusLabel.Text = "pso2_bin folder not set";
             // 
+            // exportCheckBox
+            // 
+            exportCheckBox.AutoSize = true;
+            exportCheckBox.Location = new Point(80, 258);
+            exportCheckBox.Name = "exportCheckBox";
+            exportCheckBox.Size = new Size(60, 19);
+            exportCheckBox.TabIndex = 13;
+            exportCheckBox.Text = "Export";
+            exportCheckBox.UseVisualStyleBackColor = true;
+            exportCheckBox.CheckedChanged += exportCheckBox_CheckedChanged;
+            // 
+            // backupCheckBox
+            // 
+            backupCheckBox.AutoSize = true;
+            backupCheckBox.Location = new Point(12, 258);
+            backupCheckBox.Name = "backupCheckBox";
+            backupCheckBox.Size = new Size(65, 19);
+            backupCheckBox.TabIndex = 14;
+            backupCheckBox.Text = "Backup";
+            backupCheckBox.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(496, 289);
+            Controls.Add(backupCheckBox);
+            Controls.Add(exportCheckBox);
             Controls.Add(statusLabel);
             Controls.Add(openFolderButton);
             Controls.Add(progressBar1);
@@ -172,5 +197,7 @@
         private ProgressBar progressBar1;
         private Button openFolderButton;
         private Label statusLabel;
+        private CheckBox exportCheckBox;
+        private CheckBox backupCheckBox;
     }
 }

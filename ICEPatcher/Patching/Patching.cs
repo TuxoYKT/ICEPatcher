@@ -11,6 +11,7 @@ using YamlDotNet.Serialization;
 using Zamboni;
 using Zamboni.IceFileFormats;
 using static Zamboni.IceFileFormats.IceHeaderStructures;
+using ProgressBar = System.Windows.Forms.ProgressBar;
 
 
 namespace ICEPatcher
@@ -58,6 +59,14 @@ namespace ICEPatcher
         private static string pso2binPath = null;
         private static bool allowBackup = false;
         private static bool isJapaneseClient = false;
+        private static string backupPath = null;
+        private static ProgressBar ProgressBar = null;
+
+        public static ProgressBar progressBar
+        {
+            get { return ProgressBar; }
+            set { ProgressBar = value; }
+        }
 
         public static void SetJapaneseClient(bool isJapanese)
         {
@@ -79,15 +88,24 @@ namespace ICEPatcher
             return pso2binPath;
         }
 
-        public static void AllowBackup()
+        public static bool AllowBackup
         {
-            allowBackup = true;
+            get { return allowBackup; }
+            set { allowBackup = value; }
         }
 
-        public static void DisableBackup()
+        public static void SetBackupPath(string path)
         {
-            allowBackup = false;
+            backupPath = path;
         }
+
+        public static string GetBackupPath()
+        {
+            return backupPath;
+        }
+
+        public static bool IsBackupAllowed()
+        { return allowBackup; }
         private static byte[] PatchFile(byte[] file, string fileName)
         {
             List<byte> bytes = new(file);
@@ -152,6 +170,7 @@ namespace ICEPatcher
                         byte[] patchedFile = PatchTextFile(file, filesToPatch.GetFile(yamlFile), "yaml");
                         patchedFiles.Add(patchedFile);
                         isPatched = true;
+                        progressBar.Invoke((MethodInvoker)delegate { progressBar.PerformStep(); });
                     }
                     else if (filesToPatch.FileExists(fileName + ".csv") || filesToPatch.FileExists(Path.GetFileNameWithoutExtension(fileName) + ".csv"))
                     {
@@ -165,6 +184,7 @@ namespace ICEPatcher
                         byte[] patchedFile = PatchTextFile(file, filesToPatch.GetFile(csvFile), "csv");
                         patchedFiles.Add(patchedFile);
                         isPatched = true;
+                        progressBar.Invoke((MethodInvoker)delegate { progressBar.PerformStep(); });
                     }
                     else
                     {
@@ -177,6 +197,7 @@ namespace ICEPatcher
                     {
                         patchedFiles.Add(PatchFile(filesToPatch.GetFile(fileName), fileName));
                         isPatched = true;
+                        progressBar.Invoke((MethodInvoker)delegate { progressBar.PerformStep(); });
                     }
                     else
                     {
@@ -239,6 +260,17 @@ namespace ICEPatcher
             return filesToPatch;
         }
 
+        public static void BackupICEFile(string filePath, string relativePath)
+        {
+            string backupPath = Path.Combine(GetBackupPath(), relativePath);
+            if (!Directory.Exists(Path.GetDirectoryName(backupPath)))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(backupPath));
+            }
+
+            File.Copy(filePath, backupPath, true);
+        }
+
         private static void ApplyPatchFromFolder(string patchPath, string exportPath = null)
         {
             string pso2binPath = GetPSO2BinPath();
@@ -251,7 +283,7 @@ namespace ICEPatcher
 
             string patchName = Path.GetFileName(patchPath);
 
-            foreach (var w32path in Directory.GetDirectories(patchPath))
+            Parallel.ForEach(Directory.GetDirectories(patchPath), w32path =>
             {
                 string w32folder = Path.GetFileName(w32path);
 
@@ -259,13 +291,14 @@ namespace ICEPatcher
 
                 if (w32folder.Contains("reboot")) isReboot = true;
 
-                foreach (var subpath in Directory.GetDirectories(w32path, "*", SearchOption.AllDirectories))
+                Parallel.ForEach(Directory.GetDirectories(w32path, "*", SearchOption.AllDirectories), subpath =>
                 {
                     string relativePath = Path.GetRelativePath(w32path, subpath);
                     string patchIceFolderPath = Path.Combine(patchPath, w32path, relativePath);
 
-                    if (Directory.GetDirectories(subpath).Any()) return;
-                    if (!Directory.GetFiles(subpath).Any()) return;
+                    if (Directory.GetDirectories(subpath).Any()) return; // if subpath contains a folder we skip
+
+                    if (!Directory.GetFiles(subpath).Any()) return; // if subpath is empty we skip
 
                     if (File.Exists(Path.Combine(pso2binPath, "data", w32folder, relativePath)) ||
                        File.Exists(Path.Combine(pso2binPath, "data", "dlc", w32folder, relativePath)) ||
@@ -284,6 +317,15 @@ namespace ICEPatcher
 
                         FilesToPatch filesToPatchList = ReadFilesToPatchFromFolder(patchIceFolderPath);
 
+                        if (AllowBackup)
+                        {
+                            string backupRelativeICEPath =  Path.Combine(GetBackupPath(), Path.GetRelativePath(Path.Combine(pso2binPath, "data"), PSO2IcePath));
+                            if (!File.Exists(backupRelativeICEPath))
+                            {
+                                BackupICEFile(PSO2IcePath, backupRelativeICEPath);
+                            }
+                        }
+
                         byte[] rawData = PatchIceFileFromMemory(PSO2IcePath, filesToPatchList);
 
                         if (rawData != null)
@@ -298,12 +340,12 @@ namespace ICEPatcher
                                 string relativeICEExportPath = Path.Combine(exportPath, Path.GetRelativePath(Path.Combine(pso2binPath, "data"), PSO2IcePath));
                                 if (!Directory.Exists(Path.GetDirectoryName(relativeICEExportPath))) Directory.CreateDirectory(Path.GetDirectoryName(relativeICEExportPath));
                                 File.WriteAllBytes(relativeICEExportPath, rawData);
-                                Debug.WriteLine("Exported changes on: " + PSO2IcePath + " from " + patchName);
+                                Debug.WriteLine("Exported changes applied on: " + PSO2IcePath + " from " + patchName);
                             }
                         }
                     }
-                }
-            }
+                });
+            });
         }
 
         public static void ApplyPatch(string patchName, string exportPath = null)
