@@ -10,9 +10,9 @@ using System.Text.RegularExpressions;
 
 namespace ICEPatcher
 {
-    public class TextPatcher
+    public static class TextPatcher
     {
-        public Dictionary<string, Dictionary<string, string>> ReadYAML(string yamlPath)
+        public static Dictionary<string, Dictionary<string, string>> ReadYAML(string yamlPath)
         {
             Logger.Log("Reading YAML: " + yamlPath);
 
@@ -26,7 +26,7 @@ namespace ICEPatcher
 
 
 
-        public byte[] PatchPSO2Text(byte[] PSO2TextInput, Dictionary<string, Dictionary<string, string>> dataYaml, string language = "en")
+        public static byte[] PatchPSO2Text(byte[] PSO2TextInput, Dictionary<string, Dictionary<string, string>> dataYaml, string language = "en")
         {
             var originalText = new PSO2Text(PSO2TextInput);
             PSO2Text new_text = new PSO2Text();
@@ -74,12 +74,12 @@ namespace ICEPatcher
             return new_text.GetBytesNIFL();
         }
 
-        private bool ContainsJapaneseText(string str)
+        private static bool ContainsJapaneseText(string str)
         {
             return System.Text.RegularExpressions.Regex.IsMatch(str, @"[\u3040-\u30FF\u4E00-\u9FFF]");
         }
 
-        private bool IsUntranslated(string str)
+        private static bool IsUntranslated(string str)
         {
             if (str[0] == '*')
             {
@@ -89,7 +89,7 @@ namespace ICEPatcher
         }
 
 
-        public Dictionary<string, List<string>> ReadCSV(string csvPath)
+        public static Dictionary<string, List<string>> ReadCSV(string csvPath)
         {
             Logger.Log("Reading CSV: " + csvPath);
 
@@ -125,10 +125,8 @@ namespace ICEPatcher
             return csvData;
         }
 
-        public Dictionary<string, List<string>> ReadCSVFromMemory(byte[] csvData)
+        public static Dictionary<string, List<string>> ReadCSVFromMemory(byte[] csvData)
         {
-            Logger.Log("Reading CSV: " + csvPath);
-
             Dictionary<string, List<string>> csvDictionary = new Dictionary<string, List<string>>();
 
             using (MemoryStream stream = new MemoryStream(csvData))
@@ -165,7 +163,7 @@ namespace ICEPatcher
             return csvDictionary;
         }
 
-        public byte[] PatchPSO2TextUsingCSV(byte[] PSO2TextInput, Dictionary<string, List<string>> csvData, string language = "en")
+        public static byte[] PatchPSO2TextUsingCSV(byte[] PSO2TextInput, Dictionary<string, List<string>> csvData, string language = "en")
         {
             var originalText = new PSO2Text(PSO2TextInput);
             PSO2Text new_text = new PSO2Text();

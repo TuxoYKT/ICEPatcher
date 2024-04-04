@@ -304,14 +304,13 @@ namespace ICEPatcher
 
         private byte[] PatchTextFile(byte[] groupFile, string fullPath, string format)
         {
-            TextPatcher textPatcher = new();
             string groupFileName = IceFile.getFileName(groupFile);
 
             if (format == "yaml")
             {
                 string yamlPath = DoesThisFileExistAsString(fullPath, "text", "yaml");
-                Dictionary<string, Dictionary<string, string>> dataYaml = textPatcher.ReadYAML(yamlPath);
-                byte[] textFile = textPatcher.PatchPSO2Text((byte[])groupFile, dataYaml);
+                Dictionary<string, Dictionary<string, string>> dataYaml = TextPatcher.ReadYAML(yamlPath);
+                byte[] textFile = TextPatcher.PatchPSO2Text((byte[])groupFile, dataYaml);
 
 
                 List<byte> bytes = new(textFile);
@@ -324,8 +323,8 @@ namespace ICEPatcher
             else if (format == "csv")
             {
                 string csvPath = DoesThisFileExistAsString(fullPath, "text", "csv");
-                Dictionary<string, List<string>> csvData = textPatcher.ReadCSV(csvPath);
-                byte[] textFile = textPatcher.PatchPSO2TextUsingCSV((byte[])groupFile, csvData);
+                Dictionary<string, List<string>> csvData = TextPatcher.ReadCSV(csvPath);
+                byte[] textFile = TextPatcher.PatchPSO2TextUsingCSV((byte[])groupFile, csvData);
 
                 List<byte> bytes = new(textFile);
                 bytes.InsertRange(0, new IceFileHeader(groupFileName, (uint)bytes.Count).GetBytes());

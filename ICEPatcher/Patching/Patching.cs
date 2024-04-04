@@ -85,7 +85,6 @@ namespace ICEPatcher
 
         private static byte[] PatchTextFile(byte[] groupFile, byte[] textData , string format)
         {
-            TextPatcher textPatcher = new();
             string groupFileName = IceFile.getFileName(groupFile);
 
             if (format == "yaml")
@@ -94,7 +93,7 @@ namespace ICEPatcher
                 var deserializer = new YamlDotNet.Serialization.DeserializerBuilder().Build();
                 Dictionary<string, Dictionary<string, string>> dataYaml = deserializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(textContent);
 
-                byte[] textFile = textPatcher.PatchPSO2Text((byte[])groupFile, dataYaml);
+                byte[] textFile = TextPatcher.PatchPSO2Text((byte[])groupFile, dataYaml);
 
                 List<byte> bytes = new(textFile);
                 bytes.InsertRange(0, new IceFileHeader(groupFileName, (uint)bytes.Count).GetBytes());
@@ -103,8 +102,8 @@ namespace ICEPatcher
             else if (format == "csv")
             {
                 string textContent = Encoding.UTF8.GetString(textData);
-                Dictionary<string, List<string>> csvData = textPatcher.ReadCSVFromMemory(textData);
-                byte[] textFile = textPatcher.PatchPSO2TextUsingCSV((byte[])groupFile, csvData);
+                Dictionary<string, List<string>> csvData = TextPatcher.ReadCSVFromMemory(textData);
+                byte[] textFile = TextPatcher.PatchPSO2TextUsingCSV((byte[])groupFile, csvData);
 
                 List<byte> bytes = new(textFile);
                 bytes.InsertRange(0, new IceFileHeader(groupFileName, (uint)bytes.Count).GetBytes());
@@ -117,7 +116,6 @@ namespace ICEPatcher
 
         private static List<byte[]> PatchGroupFiles(byte[][] groupFiles, FilesToPatch filesToPatch)
         {
-
             List<byte[]> patchedFiles = new List<byte[]>();
             bool isPatched = false;
 
