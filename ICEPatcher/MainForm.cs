@@ -55,7 +55,7 @@ namespace ICEPatcher
                 if (patchesListBox.GetItemCheckState(i) == CheckState.Checked)
                 {
                     string checkedItem = patchesListBox.Items[i].ToString();
-                    icePatcherCommon.ApplyPatch(inputFile, checkedItem);
+                    Patching.ApplyPatch(inputFile, checkedItem);
                 }
             }
         }
@@ -68,14 +68,14 @@ namespace ICEPatcher
 
             if (string.IsNullOrEmpty(inputFile))
             {
-                MessageBox.Show("pso2_bin folder not selected.", "ICE Patcher", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("pso2_bin folder not selected.", "ICEPatcher", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 patchButton.Enabled = true;
                 return;
             }
 
             if (patchesListBox.CheckedItems.Count == 0)
             {
-                MessageBox.Show("No patches selected.", "ICE Patcher", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("No patches selected.", "ICEPatcher", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 patchButton.Enabled = true;
                 return;
             }
@@ -94,7 +94,7 @@ namespace ICEPatcher
             progressBar1.Value = progressBar1.Maximum;
 
             statusLabel.Text = "Done";
-            MessageBox.Show("Patches applied successfully.", "ICE Patcher", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Patches applied successfully.", "ICEPatcher", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             patchButton.Enabled = true;
         }

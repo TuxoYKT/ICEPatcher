@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using YamlDotNet.Serialization;
 using Zamboni;
@@ -50,16 +51,31 @@ namespace ICEPatcher
         { return files.ContainsKey(fileName); }
     }
 
-    internal class Patching
+    public static class Patching
     {
-        private string pso2binPath = null;
+        private static string pso2binPath = null;
+        private static bool allowBackup = false;
 
-        public void SetPSO2BinPath(string path)
+        public static void SetPSO2BinPath(string path)
         {
             pso2binPath = path;
         }
 
-        private byte[] PatchFile(byte[] file, string fileName)
+        public static string GetPSO2BinPath()
+        {
+            return pso2binPath;
+        }
+
+        public static void AllowBackup()
+        {
+            allowBackup = true;
+        }
+
+        public static void DisableBackup()
+        {
+            allowBackup = false;
+        }
+        private static byte[] PatchFile(byte[] file, string fileName)
         {
             List<byte> bytes = new(file);
             bytes.InsertRange(0, new IceFileHeader(fileName, (uint)bytes.Count).GetBytes());
@@ -67,7 +83,7 @@ namespace ICEPatcher
             return bytes.ToArray();
         }
 
-        private byte[] PatchTextFile(byte[] groupFile, byte[] textData , string format)
+        private static byte[] PatchTextFile(byte[] groupFile, byte[] textData , string format)
         {
             TextPatcher textPatcher = new();
             string groupFileName = IceFile.getFileName(groupFile);
@@ -99,7 +115,7 @@ namespace ICEPatcher
             return groupFile;
         }
 
-        private List<byte[]> PatchGroupFiles(byte[][] groupFiles, FilesToPatch filesToPatch)
+        private static List<byte[]> PatchGroupFiles(byte[][] groupFiles, FilesToPatch filesToPatch)
         {
 
             List<byte[]> patchedFiles = new List<byte[]>();
@@ -150,7 +166,7 @@ namespace ICEPatcher
             return patchedFiles;
         }
 
-        public byte[] PatchIceFileFromMemory(string filePath, FilesToPatch filesToPatch)
+        public static byte[] PatchIceFileFromMemory(string filePath, FilesToPatch filesToPatch)
         {
             byte[] buffer = System.IO.File.ReadAllBytes(filePath);
             IceFile iceFile = IceFile.LoadIceFile(new MemoryStream(buffer));
@@ -158,7 +174,7 @@ namespace ICEPatcher
             List<byte[]> patchedGroupTwoFiles = PatchGroupFiles(iceFile.groupTwoFiles, filesToPatch);
 
             IceArchiveHeader header = new();
-            byte[] rawData = new IceV4File(header.GetBytes(), patchedGroupOneFiles.ToArray(), patchedGroupTwoFiles.ToArray()).GetBytes();
+            byte[] rawData = new IceV4File(header.GetBytes(), patchedGroupOneFiles.ToArray(), patchedGroupTwoFiles.ToArray()).getRawData(false, false);
 
             return rawData;
         }
@@ -186,7 +202,7 @@ namespace ICEPatcher
             }
         }
 
-        private FilesToPatch ReadFilesToPatchFromFolder(string path)
+        private static FilesToPatch ReadFilesToPatchFromFolder(string path)
         {
             FilesToPatch filesToPatch = new();
             foreach (var file in Directory.GetFiles(path))
@@ -196,7 +212,7 @@ namespace ICEPatcher
             return filesToPatch;
         }
 
-        private void ApplyPatchFromFolder(string patchPath, string exportPath)
+        private static void ApplyPatchFromFolder(string patchPath, string exportPath = null)
         {
             if (pso2binPath == null)
             {
@@ -257,6 +273,22 @@ namespace ICEPatcher
                     }
                 }
             }
+        }
+
+        public static void ApplyPatch(string patchName, string exportPath = null)
+        {
+            string patchesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Patches", patchName);
+            Debug.WriteLine("Applying patch: " + patchName);
+
+            ArksLayer arksLayer = new ArksLayer();
+
+            if (arksLayer.CheckForFilelist(patchesPath))
+            {
+                arksLayer.ApplyArksLayerPatchFromFolder(patchesPath, exportPath);
+                return;
+            }
+
+            ApplyPatchFromFolder(patchesPath, exportPath);
         }
     }
 }
