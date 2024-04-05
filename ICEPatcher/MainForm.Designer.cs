@@ -142,6 +142,7 @@
             // 
             // exportCheckBox
             // 
+            exportCheckBox.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             exportCheckBox.AutoSize = true;
             exportCheckBox.Location = new Point(80, 258);
             exportCheckBox.Name = "exportCheckBox";
@@ -153,6 +154,7 @@
             // 
             // backupCheckBox
             // 
+            backupCheckBox.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             backupCheckBox.AutoSize = true;
             backupCheckBox.Location = new Point(12, 258);
             backupCheckBox.Name = "backupCheckBox";
