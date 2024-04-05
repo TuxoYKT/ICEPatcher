@@ -10,9 +10,9 @@ using System.Text.RegularExpressions;
 
 namespace ICEPatcher
 {
-    public class TextPatcher
+    public static class TextPatcher
     {
-        public Dictionary<string, Dictionary<string, string>> ReadYAML(string yamlPath)
+        public static Dictionary<string, Dictionary<string, string>> ReadYAML(string yamlPath)
         {
             Logger.Log("Reading YAML: " + yamlPath);
 
@@ -26,7 +26,7 @@ namespace ICEPatcher
 
 
 
-        public byte[] PatchPSO2Text(byte[] PSO2TextInput, Dictionary<string, Dictionary<string, string>> dataYaml, string language = "en")
+        public static byte[] PatchPSO2Text(byte[] PSO2TextInput, Dictionary<string, Dictionary<string, string>> dataYaml, string language = "en")
         {
             var originalText = new PSO2Text(PSO2TextInput);
             PSO2Text new_text = new PSO2Text();
@@ -74,12 +74,12 @@ namespace ICEPatcher
             return new_text.GetBytesNIFL();
         }
 
-        private bool ContainsJapaneseText(string str)
+        private static bool ContainsJapaneseText(string str)
         {
             return System.Text.RegularExpressions.Regex.IsMatch(str, @"[\u3040-\u30FF\u4E00-\u9FFF]");
         }
 
-        private bool IsUntranslated(string str)
+        private static bool IsUntranslated(string str)
         {
             if (str[0] == '*')
             {
@@ -89,7 +89,7 @@ namespace ICEPatcher
         }
 
 
-        public Dictionary<string, List<string>> ReadCSV(string csvPath)
+        public static Dictionary<string, List<string>> ReadCSV(string csvPath)
         {
             Logger.Log("Reading CSV: " + csvPath);
 
@@ -125,8 +125,45 @@ namespace ICEPatcher
             return csvData;
         }
 
+        public static Dictionary<string, List<string>> ReadCSVFromMemory(byte[] csvData)
+        {
+            Dictionary<string, List<string>> csvDictionary = new Dictionary<string, List<string>>();
 
-        public byte[] PatchPSO2TextUsingCSV(byte[] PSO2TextInput, Dictionary<string, List<string>> csvData, string language = "en")
+            using (MemoryStream stream = new MemoryStream(csvData))
+            using (TextFieldParser parser = new TextFieldParser(stream))
+            {
+                parser.TextFieldType = FieldType.Delimited;
+                parser.SetDelimiters(",");
+
+                while (!parser.EndOfData)
+                {
+                    string[] fields = parser.ReadFields();
+                    if (fields.Length >= 2)
+                    {
+                        string name = fields[0].Split('#')[0]; // Strip after #
+                        string value = Regex.Unescape(fields[1].Trim('\"'));
+
+                        if (!csvDictionary.ContainsKey(name))
+                        {
+                            csvDictionary[name] = new List<string>();
+                        }
+
+                        if (!ContainsJapaneseText(value) && !IsUntranslated(value))
+                        {
+                            csvDictionary[name].Add(value);
+                        }
+                        else
+                        {
+                            csvDictionary[name].Add(null);
+                        }
+                    }
+                }
+            }
+
+            return csvDictionary;
+        }
+
+        public static byte[] PatchPSO2TextUsingCSV(byte[] PSO2TextInput, Dictionary<string, List<string>> csvData, string language = "en")
         {
             var originalText = new PSO2Text(PSO2TextInput);
             PSO2Text new_text = new PSO2Text();
