@@ -185,6 +185,7 @@ namespace ICEPatcher
                 }
 
                 string[] zipFiles = Directory.GetFiles(patchPath, "*.zip");
+
                 string[] zipNames = new string[zipFiles.Length];
                 for (int i = 0; i < zipFiles.Length; i++)
                 {
@@ -192,8 +193,8 @@ namespace ICEPatcher
                 }
 
                 string[] allNames = new string[subFolders.Length + zipFiles.Length];
-                Array.Copy(folderNames, allNames, subFolders.Length);
-                Array.Copy(zipNames, 0, allNames, subFolders.Length, zipNames.Length);
+                Array.Copy(zipNames, allNames, zipNames.Length);
+                Array.Copy(folderNames, 0, allNames, zipNames.Length, subFolders.Length);
 
                 return allNames;
             }
