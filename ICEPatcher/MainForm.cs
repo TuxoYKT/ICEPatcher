@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics;
+using System.IO.Compression;
 using System.Windows.Forms;
 using Zamboni;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
@@ -40,7 +42,7 @@ namespace ICEPatcher
                 if (patchesListBox.GetItemCheckState(i) == CheckState.Checked)
                 {
                     string checkedItem = patchesListBox.Items[i].ToString();
-                    int filesCount = icePatcherCommon.GetFilesCount(checkedItem) - 1;
+                    int filesCount = GetFilesCount(checkedItem) - 1;
                     if (filesCount > 0)
                     {
                         progressBar1.Maximum += filesCount;
@@ -159,7 +161,58 @@ namespace ICEPatcher
         }
 
 
+        public string[] GetPatches()
+        {
+            string executablePath = AppDomain.CurrentDomain.BaseDirectory;
+            string patchPath = Path.Combine(executablePath, "Patches");
 
+            try
+            {
+                string[] subFolders = Directory.GetDirectories(patchPath);
+                string[] folderNames = new string[subFolders.Length];
+                for (int i = 0; i < subFolders.Length; i++)
+                {
+                    folderNames[i] = Path.GetFileName(subFolders[i]);
+                }
+
+                string[] zipFiles = Directory.GetFiles(patchPath, "*.zip");
+                string[] zipNames = new string[zipFiles.Length];
+                for (int i = 0; i < zipFiles.Length; i++)
+                {
+                    zipNames[i] = Path.GetFileName(zipFiles[i]);
+                }
+
+                string[] allNames = new string[subFolders.Length + zipFiles.Length];
+                Array.Copy(folderNames, allNames, subFolders.Length);
+                Array.Copy(zipNames, 0, allNames, subFolders.Length, zipNames.Length);
+
+                return allNames;
+            }
+            catch (Exception err)
+            {
+                Debug.WriteLine("Error reading folder: " + err.Message);
+            }
+
+            return null;
+        }
+
+        public int GetFilesCount(string patchDir)
+        {
+            string executablePath = AppDomain.CurrentDomain.BaseDirectory;
+            string patchPath = Path.Combine(executablePath, "Patches", patchDir);
+
+            if (patchDir.EndsWith(".zip"))
+            {
+                using (ZipArchive archive = ZipFile.OpenRead(patchPath))
+                {
+                    return archive.Entries.Count;
+                }
+            }
+            else
+            {
+                return Directory.GetFiles(patchPath, "*.*", SearchOption.AllDirectories).ToList().Count;
+            }
+        }
 
         private List<bool> checkedStateList = new List<bool>();
 
@@ -168,7 +221,7 @@ namespace ICEPatcher
             SaveCheckedState();
             var previousItems = patchesListBox.Items.Cast<object>().ToList();
             patchesListBox.Items.Clear();
-            string[] patches = icePatcherCommon.GetPatches();
+            string[] patches = GetPatches();
             if (patches != null)
             {
                 patchesListBox.Items.AddRange(patches);

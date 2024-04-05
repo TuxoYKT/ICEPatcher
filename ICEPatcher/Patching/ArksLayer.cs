@@ -96,12 +96,10 @@ namespace ICEPatcher
 
                 if (!isJapaneseClient) w32folder += "_na";
 
-                if (File.Exists(Path.Combine(pso2binPath, "data", w32folder, relativePath)) ||
-                        File.Exists(Path.Combine(pso2binPath, "data", "dlc", w32folder, relativePath)))
+
+                if (Patching.DoesIceFileExist(pso2binPath, w32folder, relativePath))
                 {
-                    string PSO2IcePath = File.Exists(Path.Combine(pso2binPath, "data", "dlc", w32folder, relativePath)) ?
-                                             Path.Combine(pso2binPath, "data", "dlc", w32folder, relativePath) :
-                                             Path.Combine(pso2binPath, "data", w32folder, relativePath);
+                    string PSO2IcePath = Patching.GetPSO2IcePath(pso2binPath, w32folder, relativePath);
 
                     FilesToPatch filesToPatchList = new FilesToPatch();
                     foreach (var filePath in iceFolder.Value)

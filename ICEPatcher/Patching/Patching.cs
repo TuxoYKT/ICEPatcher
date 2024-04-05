@@ -32,6 +32,11 @@ namespace ICEPatcher
             files[fileName] = data;
         }
 
+        public void AddFileFromMemory(string fileName, byte[] data)
+        {
+            files[fileName] = data;
+        }
+
         public byte[] GetFile(string fileName) 
         {
             if (files.ContainsKey(fileName))
@@ -271,6 +276,34 @@ namespace ICEPatcher
             File.Copy(filePath, backupPath, true);
         }
 
+        public static bool DoesIceFileExist(string pso2binPath, string w32folder, string relativePath, bool isReboot = false)
+        {
+            return File.Exists(Path.Combine(pso2binPath, "data", w32folder, relativePath)) ||
+                   File.Exists(Path.Combine(pso2binPath, "data", "dlc", w32folder, relativePath)) ||
+                   File.Exists(Path.Combine(pso2binPath, "data", w32folder, CalculateMD5Hash(relativePath + ".ice", isReboot))) ||
+                   File.Exists(Path.Combine(pso2binPath, "data", "dlc", w32folder, CalculateMD5Hash(relativePath + ".ice", isReboot)));
+        }
+
+        public static string GetPSO2IcePath(string pso2binPath, string w32folder, string relativePath, bool isReboot = false)
+        {
+            if (File.Exists(Path.Combine(pso2binPath, "data", "dlc", w32folder, relativePath)))
+            {
+                return Path.Combine(pso2binPath, "data", "dlc", w32folder, relativePath);
+            }
+            else if (File.Exists(Path.Combine(pso2binPath, "data", w32folder, relativePath)))
+            {
+                return Path.Combine(pso2binPath, "data", w32folder, relativePath);
+            }
+            else if (File.Exists(Path.Combine(pso2binPath, "data", "dlc", w32folder, CalculateMD5Hash(relativePath + ".ice", isReboot))))
+            {
+                return Path.Combine(pso2binPath, "data", "dlc", w32folder, CalculateMD5Hash(relativePath + ".ice", isReboot));
+            }
+            else
+            {
+                return Path.Combine(pso2binPath, "data", w32folder, CalculateMD5Hash(relativePath + ".ice", isReboot));
+            }
+        }
+
         private static void ApplyPatchFromFolder(string patchPath, string exportPath = null)
         {
             string pso2binPath = GetPSO2BinPath();
@@ -300,20 +333,9 @@ namespace ICEPatcher
 
                     if (!Directory.GetFiles(subpath).Any()) return; // if subpath is empty we skip
 
-                    if (File.Exists(Path.Combine(pso2binPath, "data", w32folder, relativePath)) ||
-                       File.Exists(Path.Combine(pso2binPath, "data", "dlc", w32folder, relativePath)) ||
-                       File.Exists(Path.Combine(pso2binPath, "data", w32folder, CalculateMD5Hash(relativePath + ".ice", isReboot))) ||
-                       File.Exists(Path.Combine(pso2binPath, "data", "dlc", w32folder, CalculateMD5Hash(relativePath + ".ice", isReboot))))
+                    if (DoesIceFileExist(pso2binPath, w32folder, relativePath, isReboot))
                     {
-                        string PSO2IcePath = File.Exists(Path.Combine(pso2binPath, "data", w32folder, relativePath)) ?
-                                                Path.Combine(pso2binPath, "data", w32folder, relativePath) :
-
-                                                File.Exists(Path.Combine(pso2binPath, "data", "dlc", w32folder, relativePath)) ?
-                                                Path.Combine(pso2binPath, "data", "dlc", w32folder, relativePath) :
-
-                                                File.Exists(Path.Combine(pso2binPath, "data", w32folder, CalculateMD5Hash(relativePath + ".ice", isReboot))) ?
-                                                Path.Combine(pso2binPath, "data", w32folder, CalculateMD5Hash(relativePath + ".ice", isReboot)) :
-                                                Path.Combine(pso2binPath, "data", "dlc", w32folder, CalculateMD5Hash(relativePath + ".ice", isReboot));
+                        string PSO2IcePath = GetPSO2IcePath(pso2binPath, w32folder, relativePath, isReboot);
 
                         FilesToPatch filesToPatchList = ReadFilesToPatchFromFolder(patchIceFolderPath);
 
@@ -351,7 +373,14 @@ namespace ICEPatcher
         public static void ApplyPatch(string patchName, string exportPath = null)
         {
             string patchesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Patches", patchName);
+            string fileExtenstion = Path.GetExtension(patchesPath);
             Debug.WriteLine("Applying patch: " + patchName);
+
+            if (fileExtenstion == ".zip")
+            {
+                ZipPatching.ApplyPatchFromZip(patchesPath, exportPath);
+                return;
+            }
 
             if (ArksLayer.CheckForFilelist(patchesPath))
             {
