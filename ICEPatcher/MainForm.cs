@@ -100,7 +100,7 @@ namespace ICEPatcher
             {
                 if (!backupCheckBox.Checked)
                 {
-                    DialogResult result = MessageBox.Show("Backup disabled. Patches will be applied without backup. Do you wish to continue?", "Warning", MessageBoxButtons.YesNo);
+                    DialogResult result = MessageBox.Show("Backup disabled. Patches will be applied without a backup.\n\nDo you wish to continue?", "Warning", MessageBoxButtons.YesNo);
                     if (result == DialogResult.No)
                     {
                         patchButton.Enabled = true;
@@ -110,9 +110,10 @@ namespace ICEPatcher
                 }
                 else
                 {
-                    DialogResult result = MessageBox.Show("Backup enabled. They will be saved in \"Backups\" folder." +
-                        "Please make sure your game installation doesn't have any modified files.\n" +
-                        "Also please note that backups may become outdated if a game update changes files.\n" +
+                    DialogResult result = MessageBox.Show("Backup enabled. They will be saved in \"Backup\" folder.\n" +
+                        "To restore a backup, manually copy the contents of the folder to your game installation.\n" +
+                        "Please make sure that you haven't applied any patches using this tool on your game installation yet.\n" +
+                        "Also please note that backups may become outdated if a game update overwrites them.\n\n" +
                         "Do you wish to continue?", "Caution", MessageBoxButtons.YesNo);
                     if (result == DialogResult.No)
                     {
@@ -134,7 +135,10 @@ namespace ICEPatcher
                 return;
             }
 
-            statusLabel.Text = "Applying patches...";
+            if (exportCheckBox.Checked)
+                statusLabel.Text = "Exporting patches...";
+            else
+                statusLabel.Text = "Applying patches...";
 
             progressBar1.Value = 0;
             progressBar1.Step = 1;
@@ -155,6 +159,11 @@ namespace ICEPatcher
             else
             {
                 MessageBox.Show("Patches applied successfully.", "ICEPatcher", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+            if (Patching.AllowBackup)
+            {
+                MessageBox.Show("Backup created in \"Backup\" folder.\n" + Patching.GetBackupPath(), "ICEPatcher", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
 
             patchButton.Enabled = true;
