@@ -378,6 +378,12 @@ namespace ICEPatcher
 
             if (fileExtenstion == ".zip")
             {
+                if (ZipPatching.CheckForFilelistFromZip(patchesPath))
+                {
+                    ZipPatching.ApplyArksLayerPatchFromZip(patchesPath, exportPath);
+                    return;
+                }
+
                 ZipPatching.ApplyPatchFromZip(patchesPath, exportPath);
                 return;
             }
