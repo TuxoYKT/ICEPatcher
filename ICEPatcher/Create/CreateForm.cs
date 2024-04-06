@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -25,7 +26,7 @@ namespace ICEPatcher.Create
                 {
                     if (dialog.ShowDialog() == DialogResult.OK)
                     {
-                        inputTextBox.Text = dialog.SelectedPath;
+                        inputTextBox.Text = dialog.SelectedPath + "\\";
                     }
                 }
             }
@@ -53,7 +54,7 @@ namespace ICEPatcher.Create
             {
                 inputLabel.Text = "Input Folder";
 
-                if (!inputTextBox.Text.EndsWith("\\"))
+                if (!inputTextBox.Text.EndsWith("\\") && inputTextBox.Text != "")
                 {
                     inputTextBox.Text = Path.GetDirectoryName(inputTextBox.Text) + "\\";
                 }
@@ -63,7 +64,6 @@ namespace ICEPatcher.Create
                 inputLabel.Text = "Input File";
             }
         }
-
 
         private void convertTextToYamlCheckBox_CheckedChanged(object sender, EventArgs e)
         {
@@ -77,15 +77,18 @@ namespace ICEPatcher.Create
             }
         }
 
+        private void nameTextBox_TextChanged(object sender, EventArgs e)
+        {
+            nameTextBox.Text = Regex.Replace(nameTextBox.Text, "[\\/:*?\"<>|]", string.Empty);
+        }
 
         private void createButton_Click(object sender, EventArgs e)
         {
-
-        }
-
-        private void nameTextBox_TextChanged(object sender, EventArgs e)
-        {
-            
+            string name = nameTextBox.Text;
+            string input = inputTextBox.Text;
+            bool processFolder = processFolderCheckBox.Checked;
+            bool convertTextToYaml = convertTextToYamlCheckBox.Checked;
+            bool keepTextFiles = keepTextFilesCheckBox.Checked;
         }
     }
 }
