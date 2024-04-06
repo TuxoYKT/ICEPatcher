@@ -7,25 +7,12 @@ using YamlDotNet.Core;
 using AquaModelLibrary.Data.PSO2.Aqua;
 using Microsoft.VisualBasic.FileIO;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 namespace ICEPatcher
 {
     public static class TextPatcher
     {
-        public static Dictionary<string, Dictionary<string, string>> ReadYAML(string yamlPath)
-        {
-            Logger.Log("Reading YAML: " + yamlPath);
-
-            string yamlContent = File.ReadAllText(yamlPath);
-            var deserializer = new YamlDotNet.Serialization.DeserializerBuilder().Build();
-            Dictionary<string, Dictionary<string, string>> dataYaml =
-            deserializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(yamlContent);
-
-            return dataYaml;
-        }
-
-
-
         public static byte[] PatchPSO2Text(byte[] PSO2TextInput, Dictionary<string, Dictionary<string, string>> dataYaml, string language = "en")
         {
             var originalText = new PSO2Text(PSO2TextInput);
@@ -35,7 +22,6 @@ namespace ICEPatcher
             {
                 new_text.categoryNames.Add(originalText.categoryNames[i].Trim());
                 new_text.text.Add(new List<List<PSO2Text.TextPair>>());
-                Logger.Log("    " + originalText.categoryNames[i]);
                 for (int j = 0; j < originalText.text[i].Count; j++)
                 {
                     new_text.text[i].Add(new List<PSO2Text.TextPair>());
@@ -60,7 +46,6 @@ namespace ICEPatcher
                                     if (replacement.Key == originalText.text[i][j][k].name)
                                     {
                                         pair.str = replacement.Value;
-                                        //Logger.Log("    " + " - " + pair.name + ": " + pair.str + " in " + originalText.categoryNames[i]);
                                     }
                                 }
                             }
@@ -86,43 +71,6 @@ namespace ICEPatcher
                 return true;
             }
             return false;
-        }
-
-
-        public static Dictionary<string, List<string>> ReadCSV(string csvPath)
-        {
-            Logger.Log("Reading CSV: " + csvPath);
-
-            Dictionary<string, List<string>> csvData = new Dictionary<string, List<string>>();
-
-            using (TextFieldParser parser = new TextFieldParser(csvPath))
-            {
-                parser.TextFieldType = FieldType.Delimited;
-                parser.SetDelimiters(",");
-
-                while (!parser.EndOfData)
-                {
-                    string[] fields = parser.ReadFields();
-                    if (fields.Length >= 2)
-                    {
-                        string name = fields[0].Split('#')[0]; //Strip after #
-                        string str = Regex.Unescape(fields[1].ToString().Trim('\"'));
-
-                        if (!csvData.ContainsKey(name))
-                        {
-                            csvData[name] = new List<string>();
-                        }
-
-                        if (!ContainsJapaneseText(str) && !IsUntranslated(str))
-                            csvData[name].Add(str);
-                        else
-                            csvData[name].Add(null);
-                        //Logger.Log("    " + name + ": " + str);
-                    }
-                }
-            }
-
-            return csvData;
         }
 
         public static Dictionary<string, List<string>> ReadCSVFromMemory(byte[] csvData)
@@ -206,7 +154,7 @@ namespace ICEPatcher
                                     }
                                     catch (Exception e)
                                     {
-                                        Logger.Log(e.Message);
+                                        Debug.WriteLine(e.Message);
                                     }
                                 }
                                 else

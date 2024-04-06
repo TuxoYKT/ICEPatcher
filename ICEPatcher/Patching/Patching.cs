@@ -109,8 +109,6 @@ namespace ICEPatcher
             return backupPath;
         }
 
-        public static bool IsBackupAllowed()
-        { return allowBackup; }
         private static byte[] PatchFile(byte[] file, string fileName)
         {
             List<byte> bytes = new(file);
