@@ -89,6 +89,37 @@ namespace ICEPatcher.Create
             bool processFolder = processFolderCheckBox.Checked;
             bool convertTextToYaml = convertTextToYamlCheckBox.Checked;
             bool keepTextFiles = keepTextFilesCheckBox.Checked;
+
+            string executablePath = AppDomain.CurrentDomain.BaseDirectory;
+            string patchesPath = Path.Combine(executablePath, "Patches");
+            string patchPath = Path.Combine(patchesPath, name);
+
+            if (!Directory.Exists(patchPath))
+            {
+                Directory.CreateDirectory(patchPath);
+            }
+            else
+            {
+                MessageBox.Show("Folder with the same name already exists!");
+                return;
+            }
+
+            if (!processFolder) 
+            {
+                if (File.Exists(input))
+                {
+                    Creation.ProcessFileInput(input, name);
+                }
+            }
+            else
+            {
+                string[] txtFiles = Directory.GetFiles(input, "*.txt");
+
+                foreach (string file in txtFiles)
+                {
+                    Creation.ProcessFileInput(file, name);
+                }
+            }
         }
     }
 }
