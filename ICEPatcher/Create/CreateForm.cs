@@ -87,8 +87,9 @@ namespace ICEPatcher.Create
             string name = nameTextBox.Text;
             string input = inputTextBox.Text;
             bool processFolder = processFolderCheckBox.Checked;
-            bool convertTextToYaml = convertTextToYamlCheckBox.Checked;
-            bool keepTextFiles = keepTextFilesCheckBox.Checked;
+            Creation.ConvertText = convertTextToYamlCheckBox.Checked;
+            Creation.KeepTextFiles = keepTextFilesCheckBox.Checked;
+            Creation.progressBar = progressBar1;
 
             string executablePath = AppDomain.CurrentDomain.BaseDirectory;
             string patchesPath = Path.Combine(executablePath, "Patches");
@@ -120,6 +121,8 @@ namespace ICEPatcher.Create
                     Creation.ProcessFileInput(file, name);
                 }
             }
+
+            progressBar1.Value = progressBar1.Maximum;
         }
     }
 }

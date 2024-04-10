@@ -8,6 +8,8 @@ using AquaModelLibrary.Data.PSO2.Aqua;
 using Microsoft.VisualBasic.FileIO;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+using YamlDotNet.Serialization;
+using UnluacNET;
 
 namespace ICEPatcher
 {
@@ -173,6 +175,54 @@ namespace ICEPatcher
             }
 
             return new_text.GetBytesNIFL();
+        }
+
+        public static byte[] ExtractPSO2Text(byte[] PSO2TextInput, string whichLanguage = "en")
+        {
+            var text = new PSO2Text(PSO2TextInput);
+            var serializer = new SerializerBuilder().Build();
+
+
+            // if text is empty, exit
+            if (text.categoryNames.Count == 0)
+            {
+                Console.WriteLine("The provided file is empty.");
+                return null;
+            }
+
+            var textPatchData = new Dictionary<string, Dictionary<string, string>>();
+
+            for (int i = 0; i < text.categoryNames.Count; i++)
+            {
+                var category = text.categoryNames[i];
+
+                var j = whichLanguage == "jp" ? 0 : 1;
+                if (text.text[i][j].Count == 0)
+                {
+                    continue;
+                }
+
+                textPatchData.Add(category, new Dictionary<string, string>());
+                for (int k = 0; k < text.text[i][j].Count; k++)
+                {
+                    var key = text.text[i][j][k].name;
+                    var value = text.text[i][j][k].str;
+
+                    textPatchData[category].Add(key, value);
+                }
+
+            }
+
+            if (textPatchData.Count == 0)
+            {
+                // "The output is empty. This means there's no text for the language");
+                return null;
+            }
+
+            var yaml = serializer.Serialize(textPatchData).ToArray();
+            byte[] output = Encoding.UTF8.GetBytes(yaml);
+
+            return output;
         }
     }
 }

@@ -11,6 +11,26 @@ namespace ICEPatcher.Create
 {
     public static class Creation
     {
+        private static ProgressBar ProgressBar = null;
+        private static bool convertText = false;
+        private static bool keepTextFiles = false;
+
+        public static ProgressBar progressBar
+        {
+            get { return ProgressBar; }
+            set { ProgressBar = value; }
+        }
+        public static bool ConvertText
+        {
+            get { return convertText; }
+            set { convertText = value; }
+        }
+        public static bool KeepTextFiles
+        {
+            get { return keepTextFiles; }
+            set { keepTextFiles = value; }
+        }
+
         private static void WriteGroupToDirectory(byte[][] groupFiles, string outputPath = null)
         {
             if (!Directory.Exists(outputPath) && groupFiles != null && (uint)groupFiles.Length > 0U)
@@ -19,7 +39,9 @@ namespace ICEPatcher.Create
             for (int index = 0; index < groupFiles.Length; ++index)
             {
                 string str = IceFile.getFileName(groupFiles[index], index);
+                string extension = Path.GetExtension(str);
                 byte[] file;
+                byte[] convertedFile;
                 int iceHeaderSize = -1;
                 if (str == "namelessFile.bin" || str.Contains("namelessNIFLFile_"))
                 {
@@ -32,9 +54,19 @@ namespace ICEPatcher.Create
                     file = new byte[iceDataSize];
                     Array.ConstrainedCopy(groupFiles[index], iceHeaderSize, file, 0, iceDataSize);
                 }
+
+                if (convertText)
+                {
+                    convertedFile = TextPatcher.ExtractPSO2Text(file, "en");
+                    System.IO.File.WriteAllBytes(str + ".yaml", convertedFile);
+                }
+
                 Debug.WriteLine($"{str}");
-                System.IO.File.WriteAllBytes(str, file);
+                if (extension != ".text" && !KeepTextFiles)
+                    System.IO.File.WriteAllBytes(str, file);
+
                 file = null;
+                convertedFile = null;
                 groupFiles[index] = null;
             }
         }
