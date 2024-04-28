@@ -27,6 +27,7 @@ namespace ICEPatcher.Create
                     if (dialog.ShowDialog() == DialogResult.OK)
                     {
                         inputTextBox.Text = dialog.SelectedPath + "\\";
+                        nameTextBox.Text = Path.GetDirectoryName(inputTextBox.Text);
                     }
                 }
             }
@@ -43,6 +44,7 @@ namespace ICEPatcher.Create
                     if (fileDialog.ShowDialog() == DialogResult.OK)
                     {
                         inputTextBox.Text = fileDialog.FileName;
+                        nameTextBox.Text = Path.GetFileNameWithoutExtension(inputTextBox.Text);
                     }
                 }
             }
@@ -58,10 +60,15 @@ namespace ICEPatcher.Create
                 {
                     inputTextBox.Text = Path.GetDirectoryName(inputTextBox.Text) + "\\";
                 }
+
+                eachFileAsFolderCheckbox.Enabled = true;
             }
             else
             {
                 inputLabel.Text = "Input File";
+
+                eachFileAsFolderCheckbox.Enabled = false;
+                eachFileAsFolderCheckbox.Checked = false;
             }
         }
 
@@ -87,6 +94,7 @@ namespace ICEPatcher.Create
             string name = nameTextBox.Text;
             string input = inputTextBox.Text;
             bool processFolder = processFolderCheckBox.Checked;
+            bool eachInputFileAsPatch = eachFileAsFolderCheckbox.Checked;
             Creation.ConvertText = convertTextToYamlCheckBox.Checked;
             Creation.KeepTextFiles = keepTextFilesCheckBox.Checked;
             Creation.progressBar = progressBar1;
@@ -95,7 +103,7 @@ namespace ICEPatcher.Create
             string patchesPath = Path.Combine(executablePath, "Patches");
             string patchPath = Path.Combine(patchesPath, name);
 
-            if (!Directory.Exists(patchPath))
+            if (!Directory.Exists(patchPath) || !eachInputFileAsPatch)
             {
                 Directory.CreateDirectory(patchPath);
             }
@@ -118,6 +126,8 @@ namespace ICEPatcher.Create
 
                 foreach (string file in txtFiles)
                 {
+                    if (eachInputFileAsPatch) name = Path.GetFileNameWithoutExtension(file);
+
                     Creation.ProcessFileInput(file, name);
                 }
             }

@@ -301,6 +301,8 @@ namespace ICEPatcher
                 return;
             }
 
+            Patching.SetPSO2BinPath(inputFileTextBox.Text);
+
             CreateForm createForm = new CreateForm();
             createForm.ShowDialog();
         }

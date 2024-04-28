@@ -400,3 +400,4 @@ FodyWeavers.xsd
 # Ignore Patches folder
 Patches/*
 /Aqua-Toolset
+/AquaToolset

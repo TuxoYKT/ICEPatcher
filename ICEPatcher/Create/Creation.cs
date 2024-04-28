@@ -55,15 +55,22 @@ namespace ICEPatcher.Create
                     Array.ConstrainedCopy(groupFiles[index], iceHeaderSize, file, 0, iceDataSize);
                 }
 
-                if (convertText)
+                if (convertText && extension == ".text")
                 {
                     convertedFile = TextPatcher.ExtractPSO2Text(file, "en");
-                    System.IO.File.WriteAllBytes(str + ".yaml", convertedFile);
+                    System.IO.File.WriteAllBytes(Path.Combine(outputPath, str + ".yaml"), convertedFile);
+
+                    if (!keepTextFiles)
+                    {
+                        file = null;
+                    }
                 }
 
                 Debug.WriteLine($"{str}");
-                if (extension != ".text" && !KeepTextFiles)
-                    System.IO.File.WriteAllBytes(str, file);
+                if (file != null)
+                {
+                    System.IO.File.WriteAllBytes(Path.Combine(outputPath, str), file);
+                }
 
                 file = null;
                 convertedFile = null;
@@ -74,7 +81,7 @@ namespace ICEPatcher.Create
         public static void ExtractICE(string path, string outputPath = null)
         {
             if (path == null)
-            { 
+            {
                 throw new ArgumentNullException("path");
             }
 
@@ -128,7 +135,7 @@ namespace ICEPatcher.Create
                     }
 
                     string fullPath = Path.Combine(pso2binPath, "data", win32folder, iceFileSubPath);
-                    string outputPath = Path.Combine(patchPath, win32folder, iceFileSubPath);
+                    string outputPath = Path.Combine(patchPath, win32folder, relativeSubPath.Replace(".ice", ""));
 
                     if (File.Exists(fullPath))
                     {
