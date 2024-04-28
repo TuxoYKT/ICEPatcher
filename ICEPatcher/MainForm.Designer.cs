@@ -40,6 +40,7 @@
             statusLabel = new Label();
             exportCheckBox = new CheckBox();
             backupCheckBox = new CheckBox();
+            createPatchButton = new Button();
             SuspendLayout();
             // 
             // inputLabel
@@ -82,7 +83,7 @@
             // patchButton
             // 
             patchButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            patchButton.Location = new Point(409, 254);
+            patchButton.Location = new Point(409, 257);
             patchButton.Name = "patchButton";
             patchButton.Size = new Size(75, 23);
             patchButton.TabIndex = 7;
@@ -113,7 +114,7 @@
             // progressBar1
             // 
             progressBar1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            progressBar1.Location = new Point(12, 225);
+            progressBar1.Location = new Point(12, 228);
             progressBar1.Name = "progressBar1";
             progressBar1.Size = new Size(472, 23);
             progressBar1.Step = 1;
@@ -122,7 +123,7 @@
             // openFolderButton
             // 
             openFolderButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            openFolderButton.Location = new Point(409, 143);
+            openFolderButton.Location = new Point(409, 146);
             openFolderButton.Name = "openFolderButton";
             openFolderButton.Size = new Size(75, 40);
             openFolderButton.TabIndex = 11;
@@ -134,7 +135,7 @@
             // 
             statusLabel.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             statusLabel.AutoSize = true;
-            statusLabel.Location = new Point(13, 207);
+            statusLabel.Location = new Point(13, 210);
             statusLabel.Name = "statusLabel";
             statusLabel.Size = new Size(127, 15);
             statusLabel.TabIndex = 12;
@@ -144,7 +145,7 @@
             // 
             exportCheckBox.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             exportCheckBox.AutoSize = true;
-            exportCheckBox.Location = new Point(80, 258);
+            exportCheckBox.Location = new Point(80, 261);
             exportCheckBox.Name = "exportCheckBox";
             exportCheckBox.Size = new Size(60, 19);
             exportCheckBox.TabIndex = 13;
@@ -156,18 +157,30 @@
             // 
             backupCheckBox.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             backupCheckBox.AutoSize = true;
-            backupCheckBox.Location = new Point(12, 258);
+            backupCheckBox.Location = new Point(12, 261);
             backupCheckBox.Name = "backupCheckBox";
             backupCheckBox.Size = new Size(65, 19);
             backupCheckBox.TabIndex = 14;
             backupCheckBox.Text = "Backup";
             backupCheckBox.UseVisualStyleBackColor = true;
             // 
+            // createPatchButton
+            // 
+            createPatchButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            createPatchButton.Location = new Point(409, 100);
+            createPatchButton.Name = "createPatchButton";
+            createPatchButton.Size = new Size(75, 40);
+            createPatchButton.TabIndex = 15;
+            createPatchButton.Text = "Create Patch";
+            createPatchButton.UseVisualStyleBackColor = true;
+            createPatchButton.Click += createPatchButton_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(496, 289);
+            ClientSize = new Size(496, 292);
+            Controls.Add(createPatchButton);
             Controls.Add(backupCheckBox);
             Controls.Add(exportCheckBox);
             Controls.Add(statusLabel);
@@ -180,7 +193,7 @@
             Controls.Add(inputFileBrowseButton);
             Controls.Add(inputFileTextBox);
             Controls.Add(inputLabel);
-            MinimumSize = new Size(512, 328);
+            MinimumSize = new Size(512, 331);
             Name = "MainForm";
             Text = "ICEPatcher";
             ResumeLayout(false);
@@ -201,5 +214,6 @@
         private Label statusLabel;
         private CheckBox exportCheckBox;
         private CheckBox backupCheckBox;
+        private Button createPatchButton;
     }
 }

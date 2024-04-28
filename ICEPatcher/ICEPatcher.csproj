@@ -10,33 +10,38 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ICEPatcherCommon.cs" />
+    <Compile Remove="Logger.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="YamlDotNet" Version="15.1.2" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="AquaModelLibrary.Core">
-      <HintPath>..\..\..\..\Downloads\AquaToolset\net6.0-windows\AquaModelLibrary.Core.dll</HintPath>
+      <HintPath>..\AquaToolset\net6.0-windows\AquaModelLibrary.Core.dll</HintPath>
     </Reference>
     <Reference Include="AquaModelLibrary.Data">
-      <HintPath>..\..\..\..\Downloads\AquaToolset\net6.0-windows\AquaModelLibrary.Data.dll</HintPath>
+      <HintPath>..\AquaToolset\net6.0-windows\AquaModelLibrary.Data.dll</HintPath>
     </Reference>
     <Reference Include="AquaModelLibrary.Helpers">
-      <HintPath>..\..\..\..\Downloads\AquaToolset\net6.0-windows\AquaModelLibrary.Helpers.dll</HintPath>
+      <HintPath>..\AquaToolset\net6.0-windows\AquaModelLibrary.Helpers.dll</HintPath>
     </Reference>
     <Reference Include="AquaModelLibrary.Native.X64">
-      <HintPath>..\..\..\..\Downloads\AquaToolset\net6.0-windows\AquaModelLibrary.Native.X64.dll</HintPath>
+      <HintPath>..\AquaToolset\net6.0-windows\AquaModelLibrary.Native.X64.dll</HintPath>
     </Reference>
     <Reference Include="ArchiveLib">
-      <HintPath>..\..\..\..\Downloads\AquaToolset\net6.0-windows\ArchiveLib.dll</HintPath>
+      <HintPath>..\AquaToolset\net6.0-windows\ArchiveLib.dll</HintPath>
     </Reference>
     <Reference Include="UnluacNET">
-      <HintPath>..\..\..\..\Downloads\AquaToolset\net6.0-windows\UnluacNET.dll</HintPath>
+      <HintPath>..\AquaToolset\net6.0-windows\UnluacNET.dll</HintPath>
     </Reference>
     <Reference Include="VrSharp">
-      <HintPath>..\..\..\..\Downloads\AquaToolset\net6.0-windows\VrSharp.dll</HintPath>
+      <HintPath>..\AquaToolset\net6.0-windows\VrSharp.dll</HintPath>
     </Reference>
     <Reference Include="ZamboniLib">
-      <HintPath>..\..\..\..\Downloads\AquaToolset\net6.0-windows\ZamboniLib.dll</HintPath>
+      <HintPath>..\AquaToolset\net6.0-windows\ZamboniLib.dll</HintPath>
     </Reference>
   </ItemGroup>
 

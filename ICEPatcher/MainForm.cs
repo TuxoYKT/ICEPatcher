@@ -1,3 +1,4 @@
+using ICEPatcher.Create;
 using System;
 using System.Diagnostics;
 using System.IO.Compression;
@@ -9,12 +10,9 @@ namespace ICEPatcher
 {
     public partial class MainForm : Form
     {
-        private ICEPatcherCommon icePatcherCommon;
-
         public MainForm()
         {
             InitializeComponent();
-            icePatcherCommon = new ICEPatcherCommon(this);
             refreshButton_Click(null, null);
             Patching.progressBar = progressBar1;
         }
@@ -26,12 +24,13 @@ namespace ICEPatcher
 
         private void inputFileBrowseButton_Click(object sender, EventArgs e)
         {
-            string inputFile = icePatcherCommon.OpenFolder();
-
-            if (inputFile != null)
+            using (var dialog = new FolderBrowserDialog())
             {
-                inputFileTextBox.Text = inputFile;
-                statusLabel.Text = "Ready";
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    inputFileTextBox.Text = dialog.SelectedPath;
+                    statusLabel.Text = "Ready";
+                }
             }
         }
 
@@ -292,7 +291,20 @@ namespace ICEPatcher
             {
                 backupCheckBox.Enabled = true;
             }
+        }
 
+        private void createPatchButton_Click(object sender, EventArgs e)
+        {
+            if (inputFileTextBox.Text == "")
+            {
+                MessageBox.Show("pso2_bin folder not selected.", "ICEPatcher", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            Patching.SetPSO2BinPath(inputFileTextBox.Text);
+
+            CreateForm createForm = new CreateForm();
+            createForm.ShowDialog();
         }
     }
 }
