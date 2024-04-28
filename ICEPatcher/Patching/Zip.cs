@@ -39,13 +39,22 @@ namespace ICEPatcher
 
                     string[] directories = fullName.Split('/');
                     int i = 0;
+
                     while (i < directories.Length && !directories[i].Contains("win32"))
                     {
                         i++;
                     }
                     directories = directories.Skip(i).ToArray();
 
-                    string w32folder = directories[0];
+                    string w32folder = "";
+                    if (directories.Length > 0 && directories[0].Contains("win32"))
+                    {
+                        w32folder = directories[0];
+                    }
+                    else
+                    {
+                        continue;
+                    }
                     string relativePath = string.Join("/", directories[1..^1]);
                     bool isReboot = w32folder.Contains("reboot");
 
