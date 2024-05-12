@@ -66,6 +66,7 @@ namespace ICEPatcher
         private static bool isJapaneseClient = false;
         private static string backupPath = null;
         private static ProgressBar ProgressBar = null;
+        private static string patchesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Patches");
 
         public static ProgressBar progressBar
         {
@@ -81,6 +82,17 @@ namespace ICEPatcher
         public static bool IsJapaneseClient()
         {
             return isJapaneseClient;
+        }
+
+        public static bool IsPSO2BinPath(string path)
+        {
+            if
+            (!path.Contains("pso2_bin")
+                || !Directory.Exists(Path.Combine(path, "data"))
+                || !File.Exists(Path.Combine(path, "pso2.exe"))
+            )
+                return false;
+            return true;
         }
 
         public static void SetPSO2BinPath(string path)
@@ -107,6 +119,16 @@ namespace ICEPatcher
         public static string GetBackupPath()
         {
             return backupPath;
+        }
+
+        public static void SetPatchesPath(string path)
+        {
+            patchesPath = path;
+        }
+
+        public static string GetPatchesPath()
+        {
+            return patchesPath;
         }
 
         private static byte[] PatchFile(byte[] file, string fileName)
@@ -370,29 +392,29 @@ namespace ICEPatcher
 
         public static void ApplyPatch(string patchName, string exportPath = null)
         {
-            string patchesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Patches", patchName);
-            string fileExtenstion = Path.GetExtension(patchesPath);
+            string patchPath = Path.Combine(GetPatchesPath(), patchName);
+            string fileExtenstion = Path.GetExtension(patchPath);
             Debug.WriteLine("Applying patch: " + patchName);
 
             if (fileExtenstion == ".zip")
             {
-                if (ZipPatching.CheckForFilelistFromZip(patchesPath))
+                if (ZipPatching.CheckForFilelistFromZip(patchPath))
                 {
-                    ZipPatching.ApplyArksLayerPatchFromZip(patchesPath, exportPath);
+                    ZipPatching.ApplyArksLayerPatchFromZip(patchPath, exportPath);
                     return;
                 }
 
-                ZipPatching.ApplyPatchFromZip(patchesPath, exportPath);
+                ZipPatching.ApplyPatchFromZip(patchPath, exportPath);
                 return;
             }
 
-            if (ArksLayer.CheckForFilelist(patchesPath))
+            if (ArksLayer.CheckForFilelist(patchPath))
             {
-                ArksLayer.ApplyArksLayerPatchFromFolder(patchesPath, exportPath);
+                ArksLayer.ApplyArksLayerPatchFromFolder(patchPath, exportPath);
                 return;
             }
 
-            ApplyPatchFromFolder(patchesPath, exportPath);
+            ApplyPatchFromFolder(patchPath, exportPath);
         }
     }
 }
